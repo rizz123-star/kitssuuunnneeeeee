@@ -427,84 +427,85 @@ local miscTab = createTab("Misc")
 
 -- Scrolling Frame Container
 local miscFrame = Instance.new("ScrollingFrame", miscTab)
-miscFrame.Size = UDim2.new(0, 450, 0, 300)
-miscFrame.Position = UDim2.new(0,20,0,20)
+miscFrame.Size = UDim2.new(1, -20, 1, -20) -- full tab dengan margin
+miscFrame.Position = UDim2.new(0,10,0,10)
 miscFrame.BackgroundTransparency = 1
 miscFrame.ScrollBarThickness = 6
-miscFrame.CanvasSize = UDim2.new(0,0,0,0) -- otomatis nanti
-miscFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y -- biar scroll auto menyesuaikan
+miscFrame.CanvasSize = UDim2.new(0,0,0,0) 
+miscFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
+-- Layout otomatis
 local layout = Instance.new("UIListLayout", miscFrame)
 layout.FillDirection = Enum.FillDirection.Vertical
-layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 layout.SortOrder = Enum.SortOrder.LayoutOrder
-layout.Padding = UDim.new(0,5)
+layout.Padding = UDim.new(0,8) -- jarak antar item
 
--- 🔄 Rejoin Button
-local rejoinBtn = Instance.new("TextButton", miscFrame)
-rejoinBtn.Size = UDim2.new(0,200,0,40)
-rejoinBtn.Text = "🍎 Rejoin Server"
-rejoinBtn.TextColor3 = Color3.fromRGB(255,255,255)
-rejoinBtn.Font = Enum.Font.GothamBold
-rejoinBtn.TextSize = 14
-rejoinBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
-rejoinBtn.MouseButton1Click:Connect(function()
+-- Fungsi bikin tombol biar lebih gampang
+local function makeButton(text, callback)
+    local btn = Instance.new("TextButton", miscFrame)
+    btn.Size = UDim2.new(0,250,0,40)
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(255,255,255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 14
+    btn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    btn.BorderSizePixel = 0
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
+    if callback then
+        btn.MouseButton1Click:Connect(callback)
+    end
+    return btn
+end
+
+-- Fungsi bikin label
+local function makeLabel(text)
+    local lbl = Instance.new("TextLabel", miscFrame)
+    lbl.Size = UDim2.new(0,300,0,30)
+    lbl.Text = text
+    lbl.TextColor3 = Color3.fromRGB(200,200,200)
+    lbl.Font = Enum.Font.Gotham
+    lbl.TextSize = 14
+    lbl.BackgroundTransparency = 1
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    return lbl
+end
+
+-- 🔄 Rejoin
+makeButton("🍎 Rejoin Server", function()
     game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
 end)
 
 -- 🌐 Join Server by ID
 local joinBox = Instance.new("TextBox", miscFrame)
-joinBox.Size = UDim2.new(0,200,0,40)
+joinBox.Size = UDim2.new(0,250,0,40)
 joinBox.PlaceholderText = "🍎 Enter Server ID"
 joinBox.Text = ""
 joinBox.TextColor3 = Color3.fromRGB(255,255,255)
 joinBox.Font = Enum.Font.Gotham
 joinBox.TextSize = 14
 joinBox.BackgroundColor3 = Color3.fromRGB(50,50,50)
+joinBox.BorderSizePixel = 0
+Instance.new("UICorner", joinBox).CornerRadius = UDim.new(0,6)
 
-local joinBtn = Instance.new("TextButton", miscFrame)
-joinBtn.Size = UDim2.new(0,200,0,40)
-joinBtn.Text = "🍎 Join Server"
-joinBtn.TextColor3 = Color3.fromRGB(255,255,255)
-joinBtn.Font = Enum.Font.GothamBold
-joinBtn.TextSize = 14
-joinBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
-joinBtn.MouseButton1Click:Connect(function()
+makeButton("🍎 Join Server", function()
     local serverId = joinBox.Text
     if serverId ~= "" then
         game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, serverId, game.Players.LocalPlayer)
     end
 end)
 
--- 🆔 Server ID Label
-local srvIdLabel = Instance.new("TextLabel", miscFrame)
-srvIdLabel.Size = UDim2.new(0,300,0,30)
-srvIdLabel.Text = "Server ID: "..game.JobId
-srvIdLabel.TextColor3 = Color3.fromRGB(200,200,200)
-srvIdLabel.Font = Enum.Font.Gotham
-srvIdLabel.TextSize = 14
-srvIdLabel.BackgroundTransparency = 1
-srvIdLabel.TextXAlignment = Enum.TextXAlignment.Left
+-- 🆔 Server ID
+makeLabel("Server ID: "..game.JobId)
 
 -- 👥 Jumlah Player
-local playerCountLabel = Instance.new("TextLabel", miscFrame)
-playerCountLabel.Size = UDim2.new(0,300,0,30)
-playerCountLabel.Text = "Players in Server: "..#game.Players:GetPlayers()
-playerCountLabel.TextColor3 = Color3.fromRGB(200,200,200)
-playerCountLabel.Font = Enum.Font.Gotham
-playerCountLabel.TextSize = 14
-playerCountLabel.BackgroundTransparency = 1
-playerCountLabel.TextXAlignment = Enum.TextXAlignment.Left
+local playerCountLabel = makeLabel("Players in Server: "..#game.Players:GetPlayers())
+game:GetService("RunService").RenderStepped:Connect(function()
+    playerCountLabel.Text = "Players in Server: "..#game.Players:GetPlayers()
+end)
 
 -- 📋 Copy Player List
-local copyPlayersBtn = Instance.new("TextButton", miscFrame)
-copyPlayersBtn.Size = UDim2.new(0,200,0,40)
-copyPlayersBtn.Text = "📋 Copy Player List"
-copyPlayersBtn.TextColor3 = Color3.fromRGB(255,255,255)
-copyPlayersBtn.Font = Enum.Font.GothamBold
-copyPlayersBtn.TextSize = 14
-copyPlayersBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
-copyPlayersBtn.MouseButton1Click:Connect(function()
+makeButton("📋 Copy Player List", function(btn)
     local names = {}
     for _,plr in ipairs(game.Players:GetPlayers()) do
         table.insert(names, plr.Name.." ("..plr.DisplayName..")")
@@ -515,47 +516,27 @@ copyPlayersBtn.MouseButton1Click:Connect(function()
     elseif toclipboard then
         toclipboard(text)
     end
-    copyPlayersBtn.Text = "✅ Copied!"
+    btn.Text = "✅ Copied!"
     task.wait(1.5)
-    copyPlayersBtn.Text = "📋 Copy Player List"
+    btn.Text = "📋 Copy Player List"
 end)
 
 -- 🔗 Copy Game Link
-local copyLinkBtn = Instance.new("TextButton", miscFrame)
-copyLinkBtn.Size = UDim2.new(0,200,0,40)
-copyLinkBtn.Text = "🔗 Copy Game Link"
-copyLinkBtn.TextColor3 = Color3.fromRGB(255,255,255)
-copyLinkBtn.Font = Enum.Font.GothamBold
-copyLinkBtn.TextSize = 14
-copyLinkBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
-copyLinkBtn.MouseButton1Click:Connect(function()
+makeButton("🔗 Copy Game Link", function(btn)
     local link = "https://www.roblox.com/games/"..game.PlaceId.."?jobId="..game.JobId
     if setclipboard then
         setclipboard(link)
     elseif toclipboard then
         toclipboard(link)
     end
-    copyLinkBtn.Text = "✅ Link Copied!"
+    btn.Text = "✅ Link Copied!"
     task.wait(1.5)
-    copyLinkBtn.Text = "🔗 Copy Game Link"
+    btn.Text = "🔗 Copy Game Link"
 end)
 
--- 🎲 Hop Server (random)
-local hopBtn = Instance.new("TextButton", miscFrame)
-hopBtn.Size = UDim2.new(0,200,0,40)
-hopBtn.Text = "🎲 Hop Server"
-hopBtn.TextColor3 = Color3.fromRGB(255,255,255)
-hopBtn.Font = Enum.Font.GothamBold
-hopBtn.TextSize = 14
-hopBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
-hopBtn.MouseButton1Click:Connect(function()
-    local ts = game:GetService("TeleportService")
-    ts:Teleport(game.PlaceId, game.Players.LocalPlayer)
-end)
-
--- 🔄 Update player count real-time
-game:GetService("RunService").RenderStepped:Connect(function()
-    playerCountLabel.Text = "Players in Server: "..#game.Players:GetPlayers()
+-- 🎲 Hop Server
+makeButton("🎲 Hop Server", function()
+    game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
 end)
 ---------------------------------------------------
 -- DEFAULT TAB AKTIF
