@@ -356,96 +356,130 @@ game.Players.PlayerAdded:Connect(refreshPlayers)
 game.Players.PlayerRemoving:Connect(refreshPlayers)
 
 ---------------------------------------------------
--- 🏃 MOVEMENT TAB
+-- MOVEMENT TAB
 local moveTab = createTab("Movement")
 
--- ScrollingFrame biar rapi
-local moveFrame = Instance.new("ScrollingFrame", moveTab)
-moveFrame.Size = UDim2.new(1, -20, 1, -20)
-moveFrame.Position = UDim2.new(0,10,0,10)
-moveFrame.BackgroundTransparency = 1
-moveFrame.ScrollBarThickness = 6
-moveFrame.CanvasSize = UDim2.new(0,0,0,0)
-moveFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+-- VARIABEL AWAL
+local speed = 16
+local jump = 50
 
-local layout = Instance.new("UIListLayout", moveFrame)
-layout.FillDirection = Enum.FillDirection.Vertical
-layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-layout.SortOrder = Enum.SortOrder.LayoutOrder
-layout.Padding = UDim.new(0,8)
-
--- Fungsi bikin TextBox
-local function makeBox(placeholder, default, callback)
-    local box = Instance.new("TextBox", moveFrame)
-    box.Size = UDim2.new(0,250,0,40)
-    box.PlaceholderText = placeholder
-    box.TextColor3 = Color3.fromRGB(255,255,255)
-    box.BackgroundColor3 = Color3.fromRGB(40,40,40)
-    box.ClearTextOnFocus = false
-    box.BorderSizePixel = 0
-    box.Font = Enum.Font.Gotham
-    box.TextSize = 14
-    Instance.new("UICorner", box).CornerRadius = UDim.new(0,6)
-    box.FocusLost:Connect(function()
-        local val = tonumber(box.Text)
-        callback(val or default)
-    end)
-    return box
+-- UPDATE SPEED KE PLAYER
+local function setSpeed()
+    local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+    if hum then hum.WalkSpeed = speed end
 end
 
--- Fungsi bikin Toggle
-local function makeToggle(text, callback)
-    local btn = Instance.new("TextButton", moveFrame)
-    btn.Size = UDim2.new(0,250,0,40)
-    btn.Text = "❌ "..text
-    btn.TextColor3 = Color3.fromRGB(255,255,255)
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 14
-    btn.BackgroundColor3 = Color3.fromRGB(50,50,50)
-    btn.BorderSizePixel = 0
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
-
-    local state = false
-    btn.MouseButton1Click:Connect(function()
-        state = not state
-        btn.Text = (state and "✅ " or "❌ ")..text
-        callback(state)
-    end)
-    return btn
-end
-
--- Ambil Humanoid
-local function getHumanoid()
-    return player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-end
-
--- SPEED
-makeBox("🍎 Speed (default 16)", 16, function(val)
-    local hum = getHumanoid()
-    if hum then hum.WalkSpeed = val end
-end)
-
--- JUMP POWER
-makeBox("🍎 Jump Power (default 50)", 50, function(val)
-    local hum = getHumanoid()
+-- UPDATE JUMP KE PLAYER
+local function setJump()
+    local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
     if hum then 
         hum.UseJumpPower = true
-        hum.JumpPower = val
+        hum.JumpPower = jump
     end
+end
+
+-- LABEL SPEED
+local speedLabel = Instance.new("TextLabel", moveTab)
+speedLabel.Size = UDim2.new(0,200,0,30)
+speedLabel.Position = UDim2.new(0,20,0,20)
+speedLabel.Text = "🍎 Speed: "..speed
+speedLabel.TextColor3 = Color3.fromRGB(255,255,255)
+speedLabel.Font = Enum.Font.GothamBold
+speedLabel.TextSize = 14
+speedLabel.BackgroundTransparency = 1
+
+-- BUTTON SPEED +
+local speedPlus = Instance.new("TextButton", moveTab)
+speedPlus.Size = UDim2.new(0,90,0,30)
+speedPlus.Position = UDim2.new(0,20,0,55)
+speedPlus.Text = "+ Speed"
+speedPlus.TextColor3 = Color3.fromRGB(255,255,255)
+speedPlus.Font = Enum.Font.GothamBold
+speedPlus.TextSize = 14
+speedPlus.BackgroundColor3 = Color3.fromRGB(50,50,50)
+speedPlus.MouseButton1Click:Connect(function()
+    speed = speed + 5
+    speedLabel.Text = "🍎 Speed: "..speed
+    setSpeed()
 end)
 
--- INFINITE JUMP
+-- BUTTON SPEED -
+local speedMinus = Instance.new("TextButton", moveTab)
+speedMinus.Size = UDim2.new(0,90,0,30)
+speedMinus.Position = UDim2.new(0,130,0,55)
+speedMinus.Text = "- Speed"
+speedMinus.TextColor3 = Color3.fromRGB(255,255,255)
+speedMinus.Font = Enum.Font.GothamBold
+speedMinus.TextSize = 14
+speedMinus.BackgroundColor3 = Color3.fromRGB(50,50,50)
+speedMinus.MouseButton1Click:Connect(function()
+    speed = speed - 5
+    if speed < 0 then speed = 0 end
+    speedLabel.Text = "🍎 Speed: "..speed
+    setSpeed()
+end)
+
+-- LABEL JUMP
+local jumpLabel = Instance.new("TextLabel", moveTab)
+jumpLabel.Size = UDim2.new(0,200,0,30)
+jumpLabel.Position = UDim2.new(0,20,0,100)
+jumpLabel.Text = "🍎 Jump Power: "..jump
+jumpLabel.TextColor3 = Color3.fromRGB(255,255,255)
+jumpLabel.Font = Enum.Font.GothamBold
+jumpLabel.TextSize = 14
+jumpLabel.BackgroundTransparency = 1
+
+-- BUTTON JUMP +
+local jumpPlus = Instance.new("TextButton", moveTab)
+jumpPlus.Size = UDim2.new(0,90,0,30)
+jumpPlus.Position = UDim2.new(0,20,0,135)
+jumpPlus.Text = "+ Jump"
+jumpPlus.TextColor3 = Color3.fromRGB(255,255,255)
+jumpPlus.Font = Enum.Font.GothamBold
+jumpPlus.TextSize = 14
+jumpPlus.BackgroundColor3 = Color3.fromRGB(50,50,50)
+jumpPlus.MouseButton1Click:Connect(function()
+    jump = jump + 5
+    jumpLabel.Text = "🍎 Jump Power: "..jump
+    setJump()
+end)
+
+-- BUTTON JUMP -
+local jumpMinus = Instance.new("TextButton", moveTab)
+jumpMinus.Size = UDim2.new(0,90,0,30)
+jumpMinus.Position = UDim2.new(0,130,0,135)
+jumpMinus.Text = "- Jump"
+jumpMinus.TextColor3 = Color3.fromRGB(255,255,255)
+jumpMinus.Font = Enum.Font.GothamBold
+jumpMinus.TextSize = 14
+jumpMinus.BackgroundColor3 = Color3.fromRGB(50,50,50)
+jumpMinus.MouseButton1Click:Connect(function()
+    jump = jump - 5
+    if jump < 0 then jump = 0 end
+    jumpLabel.Text = "🍎 Jump Power: "..jump
+    setJump()
+end)
+
+-- INFINITE JUMP TOGGLE
 local infjump = false
-makeToggle("Infinite Jump", function(on)
-    infjump = on
+local infBtn = Instance.new("TextButton", moveTab)
+infBtn.Size = UDim2.new(0,200,0,40)
+infBtn.Position = UDim2.new(0,20,0,180)
+infBtn.Text = "❌ Infinite Jump"
+infBtn.TextColor3 = Color3.fromRGB(255,255,255)
+infBtn.Font = Enum.Font.GothamBold
+infBtn.TextSize = 14
+infBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+infBtn.BorderSizePixel = 0
+
+infBtn.MouseButton1Click:Connect(function()
+    infjump = not infjump
+    infBtn.Text = (infjump and "✅ Infinite Jump" or "❌ Infinite Jump")
 end)
 
 game:GetService("UserInputService").JumpRequest:Connect(function()
-    if infjump then
-        local hum = getHumanoid()
-        if hum then
-            hum:ChangeState(Enum.HumanoidStateType.Jumping)
-        end
+    if infjump and player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+        player.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
     end
 end)
 ---------------------------------------------------
