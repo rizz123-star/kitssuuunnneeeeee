@@ -356,53 +356,55 @@ game.Players.PlayerAdded:Connect(refreshPlayers)
 game.Players.PlayerRemoving:Connect(refreshPlayers)
 
 ---------------------------------------------------
--- MOVEMENT TAB
+-- 🏃 MOVEMENT TAB
 local moveTab = createTab("Movement")
 
--- SPEED
-local speedBox = Instance.new("TextBox", moveTab)
-speedBox.Size = UDim2.new(0,200,0,40)
-speedBox.Position = UDim2.new(0,20,0,20)
-speedBox.PlaceholderText = "🍎 Speed (default 16)"
-speedBox.TextColor3 = Color3.fromRGB(255,255,255)
-speedBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
-speedBox.ClearTextOnFocus = false
-speedBox.BorderSizePixel = 0
-speedBox.FocusLost:Connect(function()
-    local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-    if hum then 
-        local val = tonumber(speedBox.Text)
-        hum.WalkSpeed = val or 16
-    end
-end)
+-- ScrollingFrame biar rapi
+local moveFrame = Instance.new("ScrollingFrame", moveTab)
+moveFrame.Size = UDim2.new(1, -20, 1, -20)
+moveFrame.Position = UDim2.new(0,10,0,10)
+moveFrame.BackgroundTransparency = 1
+moveFrame.ScrollBarThickness = 6
+moveFrame.CanvasSize = UDim2.new(0,0,0,0)
+moveFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
--- JUMP POWER
-local jumpBox = Instance.new("TextBox", moveTab)
-jumpBox.Size = UDim2.new(0,200,0,40)
-jumpBox.Position = UDim2.new(0,20,0,70)
-jumpBox.PlaceholderText = "🍎 Jump Power (default 50)"
-jumpBox.TextColor3 = Color3.fromRGB(255,255,255)
-jumpBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
-jumpBox.ClearTextOnFocus = false
-jumpBox.BorderSizePixel = 0
-jumpBox.FocusLost:Connect(function()
-    local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-    if hum then 
-        local val = tonumber(jumpBox.Text)
-        hum.UseJumpPower = true 
-        hum.JumpPower = val or 50 
-    end
-end)
+local layout = Instance.new("UIListLayout", moveFrame)
+layout.FillDirection = Enum.FillDirection.Vertical
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.Padding = UDim.new(0,8)
 
--- BIKIN TOGGLE FUNCTION BIAR GA ERROR
-local function makeToggle(parent, sizeX, text, callback)
-    local btn = Instance.new("TextButton", parent)
-    btn.Size = UDim2.new(0,sizeX,0,30)
+-- Fungsi bikin TextBox
+local function makeBox(placeholder, default, callback)
+    local box = Instance.new("TextBox", moveFrame)
+    box.Size = UDim2.new(0,250,0,40)
+    box.PlaceholderText = placeholder
+    box.TextColor3 = Color3.fromRGB(255,255,255)
+    box.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    box.ClearTextOnFocus = false
+    box.BorderSizePixel = 0
+    box.Font = Enum.Font.Gotham
+    box.TextSize = 14
+    Instance.new("UICorner", box).CornerRadius = UDim.new(0,6)
+    box.FocusLost:Connect(function()
+        local val = tonumber(box.Text)
+        callback(val or default)
+    end)
+    return box
+end
+
+-- Fungsi bikin Toggle
+local function makeToggle(text, callback)
+    local btn = Instance.new("TextButton", moveFrame)
+    btn.Size = UDim2.new(0,250,0,40)
     btn.Text = "❌ "..text
     btn.TextColor3 = Color3.fromRGB(255,255,255)
     btn.Font = Enum.Font.GothamBold
     btn.TextSize = 14
     btn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    btn.BorderSizePixel = 0
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
+
     local state = false
     btn.MouseButton1Click:Connect(function()
         state = not state
@@ -412,13 +414,38 @@ local function makeToggle(parent, sizeX, text, callback)
     return btn
 end
 
+-- Ambil Humanoid
+local function getHumanoid()
+    return player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+end
+
+-- SPEED
+makeBox("🍎 Speed (default 16)", 16, function(val)
+    local hum = getHumanoid()
+    if hum then hum.WalkSpeed = val end
+end)
+
+-- JUMP POWER
+makeBox("🍎 Jump Power (default 50)", 50, function(val)
+    local hum = getHumanoid()
+    if hum then 
+        hum.UseJumpPower = true
+        hum.JumpPower = val
+    end
+end)
+
 -- INFINITE JUMP
 local infjump = false
-makeToggle(moveTab,200,"Infinite Jump",function(on) infjump=on end)
+makeToggle("Infinite Jump", function(on)
+    infjump = on
+end)
 
 game:GetService("UserInputService").JumpRequest:Connect(function()
-    if infjump and player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
-        player.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+    if infjump then
+        local hum = getHumanoid()
+        if hum then
+            hum:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
     end
 end)
 ---------------------------------------------------
