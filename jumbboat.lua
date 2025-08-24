@@ -283,33 +283,75 @@ game:GetService("RunService").Stepped:Connect(function()
     end
 end)
 
--- FLY
+-- FLY MODE 
 local flying = false
-local flySpeed = 60
+local flySpeed = 80
 local bodyVel, bodyGyro
-makeToggle(mainTab,120,"Fly",function(on)
+local flyAnim, flyTrack
+local windPart
+
+-- Animasi pose superman (ganti asset id dengan animasi kamu)
+flyAnim = Instance.new("Animation")
+flyAnim.AnimationId = "rbxassetid://507776043" -- contoh animasi terbang
+
+makeToggle(mainTab,120,"Superman Fly",function(on)
     flying = on
     local char = player.Character
     if not char then return end
     local root = char:WaitForChild("HumanoidRootPart")
     local hum = char:FindFirstChildOfClass("Humanoid")
+
     if on then
         hum.PlatformStand = true
+
         bodyVel = Instance.new("BodyVelocity", root)
         bodyVel.MaxForce = Vector3.new(1e5,1e5,1e5)
         bodyVel.Velocity = Vector3.new()
+
         bodyGyro = Instance.new("BodyGyro", root)
         bodyGyro.MaxTorque = Vector3.new(1e5,1e5,1e5)
         bodyGyro.P = 1e4
+
+        -- Play animasi
+        flyTrack = hum:LoadAnimation(flyAnim)
+        flyTrack.Priority = Enum.AnimationPriority.Action
+        flyTrack:Play()
+
+        -- Tambahin efek angin
+        windPart = Instance.new("ParticleEmitter", root)
+        windPart.Texture = "rbxassetid://242861199" -- efek angin putih
+        windPart.Rate = 40
+        windPart.Lifetime = NumberRange.new(0.2,0.4)
+        windPart.Speed = NumberRange.new(15,25)
+        windPart.Rotation = NumberRange.new(0,360)
+        windPart.RotSpeed = NumberRange.new(-200,200)
+        windPart.VelocitySpread = 180
+        windPart.Size = NumberSequence.new({
+            NumberSequenceKeypoint.new(0,0.8),
+            NumberSequenceKeypoint.new(1,0.2)
+        })
+        windPart.Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0,0.3),
+            NumberSequenceKeypoint.new(1,1)
+        })
     else
         if bodyVel then bodyVel:Destroy() end
         if bodyGyro then bodyGyro:Destroy() end
         hum.PlatformStand = false
+
+        -- Stop animasi
+        if flyTrack then flyTrack:Stop() end
+
+        -- Hapus efek angin
+        if windPart then windPart:Destroy() end
     end
 end)
+
+-- Gerak sesuai kamera
 game:GetService("RunService").RenderStepped:Connect(function()
     if flying and player.Character and bodyVel and bodyGyro then
-        local root = player.Character.HumanoidRootPart
+        local root = player.Character:FindFirstChild("HumanoidRootPart")
+        if not root then return end
         local camCF = workspace.CurrentCamera.CFrame
         bodyGyro.CFrame = camCF
         local dir = camCF.LookVector
