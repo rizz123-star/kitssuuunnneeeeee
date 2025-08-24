@@ -100,7 +100,21 @@ local content = Instance.new("Frame", mainFrame)
 content.Size = UDim2.new(1, -120, 1, -35)
 content.Position = UDim2.new(0, 120, 0, 35)
 content.BackgroundTransparency = 1
+-- Scrolling Frame Container
+local miscFrame = Instance.new("ScrollingFrame", miscTab)
+miscFrame.Size = UDim2.new(1, -20, 1, -20)
+miscFrame.Position = UDim2.new(0,10,0,10)
+miscFrame.BackgroundTransparency = 1
+miscFrame.ScrollBarThickness = 6
+miscFrame.CanvasSize = UDim2.new(0,0,0,0) 
+miscFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+miscFrame.ScrollBarImageColor3 = Color3.fromRGB(255,255,255) -- scrollbar putih
+miscFrame.ScrollBarImageTransparency = 0.3 -- agak transparan biar elegan
 
+local stroke = Instance.new("UIStroke", miscFrame)
+stroke.Color = Color3.fromRGB(255,255,255)
+stroke.Thickness = 1
+stroke.Transparency = 0.5
 -- SISTEM TAB
 local tabs = {}
 local function createTab(name)
