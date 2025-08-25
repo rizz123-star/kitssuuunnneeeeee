@@ -1,54 +1,3 @@
-local player = game.Players.LocalPlayer
-local gui = Instance.new("ScreenGui")
-gui.Name = "RizzToolsHub"
-gui.ResetOnSpawn = false
-gui.Parent = game:GetService("CoreGui")
-
--- Developer Label (pojok kiri bawah)
-local devLabel = Instance.new("TextLabel", gui)
-devLabel.Size = UDim2.new(0,200,0,25)
-devLabel.Position = UDim2.new(0,10,1,-30)
-devLabel.Text = "👨‍💻 Developer: Rizztzy"
-devLabel.TextColor3 = Color3.fromRGB(255,255,255)
-devLabel.Font = Enum.Font.GothamBold
-devLabel.TextSize = 14
-devLabel.BackgroundTransparency = 1
-devLabel.TextXAlignment = Enum.TextXAlignment.Left
-
--- Notifikasi Success (pojok kanan bawah)
-local function showSuccess(msg)
-    local notif = Instance.new("Frame", gui)
-    notif.Size = UDim2.new(0,200,0,40)
-    notif.Position = UDim2.new(1,-210,1,-60)
-    notif.BackgroundColor3 = Color3.fromRGB(20,20,20)
-    notif.BackgroundTransparency = 0.1
-    notif.BorderSizePixel = 0
-    notif.Active = true
-
-    local corner = Instance.new("UICorner", notif)
-    corner.CornerRadius = UDim.new(0,10)
-
-    local lbl = Instance.new("TextLabel", notif)
-    lbl.Size = UDim2.new(1,0,1,0)
-    lbl.Text = "✅ "..(msg or "Success!")
-    lbl.TextColor3 = Color3.fromRGB(0,255,100)
-    lbl.Font = Enum.Font.GothamBold
-    lbl.TextSize = 16
-    lbl.BackgroundTransparency = 1
-
-    -- Tween animasi muncul & hilang
-    local TweenService = game:GetService("TweenService")
-    notif.Position = UDim2.new(1,-210,1,50)
-    TweenService:Create(notif, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {Position = UDim2.new(1,-210,1,-60)}):Play()
-
-    task.delay(3,function()
-        TweenService:Create(notif, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {Position = UDim2.new(1,-210,1,50)}):Play()
-        task.delay(0.5,function() notif:Destroy() end)
-    end)
-end
-
--- Panggil notifikasi sekali setelah exec
-showSuccess("Hub Loaded Successfully!")
 -- FRAME UTAMA
 local mainFrame = Instance.new("Frame", gui)
 mainFrame.Size = UDim2.new(0, 450, 0, 300)
@@ -56,6 +5,8 @@ mainFrame.Position = UDim2.new(0.5, -225, 0.5, -150)
 mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 mainFrame.BackgroundTransparency = 0.1
 mainFrame.BorderSizePixel = 0
+mainFrame.Active = true -- penting biar bisa geser
+mainFrame.Draggable = true -- draggable seluruh frame
 
 -- TITLE BAR
 local titleBar = Instance.new("Frame", mainFrame)
@@ -63,7 +14,7 @@ titleBar.Size = UDim2.new(1,0,0,35)
 titleBar.BackgroundColor3 = Color3.fromRGB(40,40,40)
 titleBar.BorderSizePixel = 0
 titleBar.Active = true
-titleBar.Draggable = true
+titleBar.Draggable = true -- drag lewat title bar juga bisa
 
 -- JUDUL
 local titleLabel = Instance.new("TextLabel", titleBar)
@@ -75,18 +26,22 @@ titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextSize = 16
 titleLabel.BackgroundTransparency = 1
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.TextScaled = true -- text auto scale
 
--- TOMBOL CLOSE
+-- CLOSE BUTTON
 local closeBtn = Instance.new("TextButton", titleBar)
 closeBtn.Size = UDim2.new(0,25,0,25)
 closeBtn.Position = UDim2.new(1,-30,0.5,-12)
 closeBtn.Text = "✖"
 closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 16
+closeBtn.TextScaled = true
 closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
 closeBtn.BackgroundColor3 = Color3.fromRGB(200,0,0)
 closeBtn.BorderSizePixel = 0
 Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0,6)
+closeBtn.MouseButton1Click:Connect(function()
+    mainFrame.Visible = false
+end)
 
 -- SIDEBAR
 local sidebar = Instance.new("Frame", mainFrame)
@@ -100,21 +55,7 @@ local content = Instance.new("Frame", mainFrame)
 content.Size = UDim2.new(1, -120, 1, -35)
 content.Position = UDim2.new(0, 120, 0, 35)
 content.BackgroundTransparency = 1
--- Scrolling Frame Container
-local miscFrame = Instance.new("ScrollingFrame", miscTab)
-miscFrame.Size = UDim2.new(1, -20, 1, -20)
-miscFrame.Position = UDim2.new(0,10,0,10)
-miscFrame.BackgroundTransparency = 1
-miscFrame.ScrollBarThickness = 6
-miscFrame.CanvasSize = UDim2.new(0,0,0,0) 
-miscFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-miscFrame.ScrollBarImageColor3 = Color3.fromRGB(255,255,255) -- scrollbar putih
-miscFrame.ScrollBarImageTransparency = 0.3 -- agak transparan biar elegan
 
-local stroke = Instance.new("UIStroke", miscFrame)
-stroke.Color = Color3.fromRGB(255,255,255)
-stroke.Thickness = 1
-stroke.Transparency = 0.5
 -- SISTEM TAB
 local tabs = {}
 local function createTab(name)
@@ -123,14 +64,22 @@ local function createTab(name)
     btn.Position = UDim2.new(0, 5, 0, #tabs * 45 + 10)
     btn.Text = "🍎 "..name
     btn.TextColor3 = Color3.fromRGB(255,255,255)
+    btn.Font = Enum.Font.Gotham
+    btn.TextScaled = true
     btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
     btn.BorderSizePixel = 0
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
 
-    local frame = Instance.new("Frame", content)
+    local frame = Instance.new("ScrollingFrame", content)
     frame.Size = UDim2.new(1, -10, 1, -10)
     frame.Position = UDim2.new(0,5,0,5)
     frame.Visible = false
     frame.BackgroundTransparency = 1
+    frame.ScrollBarThickness = 6
+    frame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    frame.CanvasSize = UDim2.new(0,0,0,0)
+    frame.ScrollBarImageColor3 = Color3.fromRGB(255,255,255)
+    frame.ScrollBarImageTransparency = 0.3
 
     btn.MouseButton1Click:Connect(function()
         for _,t in pairs(tabs) do
