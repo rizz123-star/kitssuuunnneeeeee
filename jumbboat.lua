@@ -1,22 +1,18 @@
--- FRAME UTAMA
-local player = game.Players.LocalPlayer
-local gui = Instance.new("ScreenGui")
-gui.Name = "RizzHubUI"
-gui.Parent = player:WaitForChild("PlayerGui")
-gui.ResetOnSpawn = false
+-- GUI RIZZ TOOLS HUB
+local uis = game:GetService("UserInputService")
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "RizzToolsHub"
 
--- FRAME UTAMA
-local mainFrame = Instance.new("Frame")
+-- 🖼 FRAME UTAMA
+local mainFrame = Instance.new("Frame", gui)
 mainFrame.Size = UDim2.new(0, 450, 0, 300)
 mainFrame.Position = UDim2.new(0.5, -225, 0.5, -150)
 mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 mainFrame.BackgroundTransparency = 0.1
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
-mainFrame.Draggable = true
-mainFrame.Parent = gui
 
--- RESIZE HANDLE
+-- 🎛️ RESIZE HANDLE
 local resizeHandle = Instance.new("Frame", mainFrame)
 resizeHandle.Size = UDim2.new(0, 15, 0, 15)
 resizeHandle.Position = UDim2.new(1, -15, 1, -15)
@@ -26,8 +22,7 @@ resizeHandle.BorderSizePixel = 0
 resizeHandle.Active = true
 Instance.new("UICorner", resizeHandle).CornerRadius = UDim.new(0, 4)
 
--- SISTEM RESIZE
-local uis = game:GetService("UserInputService")
+-- ⚙️ SISTEM RESIZE
 local resizing = false
 local startPos, startSize
 
@@ -49,87 +44,115 @@ uis.InputChanged:Connect(function(input)
 	if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
 		local mousePos = uis:GetMouseLocation()
 		local diff = mousePos - startPos
-		local newX = math.max(300, startSize.X.Offset + diff.X)
-		local newY = math.max(200, startSize.Y.Offset + diff.Y)
+		local newX = math.max(300, startSize.X.Offset + diff.X) -- minimal 300px
+		local newY = math.max(200, startSize.Y.Offset + diff.Y) -- minimal 200px
 		mainFrame.Size = UDim2.new(0, newX, 0, newY)
 	end
 end)
 
--- TITLE BAR
+-- 🏷️ TITLE BAR
 local titleBar = Instance.new("Frame", mainFrame)
-titleBar.Size = UDim2.new(1,0,0,35)
-titleBar.BackgroundColor3 = Color3.fromRGB(40,40,40)
+titleBar.Size = UDim2.new(1, 0, 0, 35)
+titleBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 titleBar.BorderSizePixel = 0
 titleBar.Active = true
-titleBar.Draggable = true
 
--- JUDUL
+-- 📝 JUDUL
 local titleLabel = Instance.new("TextLabel", titleBar)
 titleLabel.Size = UDim2.new(1, -40, 1, 0)
-titleLabel.Position = UDim2.new(0,10,0,0)
+titleLabel.Position = UDim2.new(0, 10, 0, 0)
 titleLabel.Text = "🍎 Rizz Tools Hub"
-titleLabel.TextColor3 = Color3.fromRGB(255,255,255)
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextSize = 16
 titleLabel.BackgroundTransparency = 1
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 titleLabel.TextScaled = true
 
--- CLOSE BUTTON
+-- ❌ CLOSE BUTTON
 local closeBtn = Instance.new("TextButton", titleBar)
-closeBtn.Size = UDim2.new(0,25,0,25)
-closeBtn.Position = UDim2.new(1,-30,0.5,-12)
+closeBtn.Size = UDim2.new(0, 25, 0, 25)
+closeBtn.Position = UDim2.new(1, -30, 0.5, -12)
 closeBtn.Text = "✖"
 closeBtn.Font = Enum.Font.GothamBold
 closeBtn.TextScaled = true
-closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
-closeBtn.BackgroundColor3 = Color3.fromRGB(200,0,0)
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 closeBtn.BorderSizePixel = 0
-Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0,6)
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
+
 closeBtn.MouseButton1Click:Connect(function()
 	mainFrame.Visible = false
 end)
 
--- SIDEBAR
+-- 🖱️ SISTEM DRAG MANUAL
+local dragging = false
+local dragStart, startPos
+
+titleBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = mainFrame.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+uis.InputChanged:Connect(function(input)
+	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+		local delta = input.Position - dragStart
+		mainFrame.Position = UDim2.new(
+			startPos.X.Scale, startPos.X.Offset + delta.X,
+			startPos.Y.Scale, startPos.Y.Offset + delta.Y
+		)
+	end
+end)
+
+-- 📑 SIDEBAR
 local sidebar = Instance.new("Frame", mainFrame)
 sidebar.Size = UDim2.new(0, 120, 1, -35)
-sidebar.Position = UDim2.new(0,0,0,35)
-sidebar.BackgroundColor3 = Color3.fromRGB(30,30,30)
+sidebar.Position = UDim2.new(0, 0, 0, 35)
+sidebar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 sidebar.BorderSizePixel = 0
 
--- CONTENT AREA
+-- 📦 CONTENT AREA
 local content = Instance.new("Frame", mainFrame)
 content.Size = UDim2.new(1, -120, 1, -35)
 content.Position = UDim2.new(0, 120, 0, 35)
 content.BackgroundTransparency = 1
 
--- SISTEM TAB
+-- 📌 SISTEM TAB
 local tabs = {}
 local function createTab(name)
 	local btn = Instance.new("TextButton", sidebar)
 	btn.Size = UDim2.new(1, -10, 0, 40)
 	btn.Position = UDim2.new(0, 5, 0, #tabs * 45 + 10)
-	btn.Text = "🍎 "..name
-	btn.TextColor3 = Color3.fromRGB(255,255,255)
+	btn.Text = "🍎 " .. name
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
 	btn.Font = Enum.Font.Gotham
 	btn.TextScaled = true
-	btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+	btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 	btn.BorderSizePixel = 0
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
 
 	local frame = Instance.new("ScrollingFrame", content)
 	frame.Size = UDim2.new(1, -10, 1, -10)
-	frame.Position = UDim2.new(0,5,0,5)
+	frame.Position = UDim2.new(0, 5, 0, 5)
 	frame.Visible = false
 	frame.BackgroundTransparency = 1
 	frame.ScrollBarThickness = 6
 	frame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-	frame.CanvasSize = UDim2.new(0,0,0,0)
-	frame.ScrollBarImageColor3 = Color3.fromRGB(255,255,255)
+	frame.CanvasSize = UDim2.new(0, 0, 0, 0)
+	frame.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
 	frame.ScrollBarImageTransparency = 0.3
 
 	btn.MouseButton1Click:Connect(function()
-		for _,t in pairs(tabs) do
+		for _, t in pairs(tabs) do
 			t.frame.Visible = false
 		end
 		frame.Visible = true
@@ -139,35 +162,36 @@ local function createTab(name)
 	return frame
 end
 
--- UTILS: bikin tombol ON/OFF
+-- ✅ UTIL: BIKIN TOGGLE
 local function makeToggle(parent, posY, text, callback)
-    local btn = Instance.new("TextButton", parent)
-    btn.Size = UDim2.new(0, 200, 0, 40)
-    btn.Position = UDim2.new(0,20,0,posY)
-    btn.Text = "🍎 "..text.." [OFF]"
-    btn.TextColor3 = Color3.fromRGB(255,255,255)
-    btn.BackgroundColor3 = Color3.fromRGB(150,0,0)
-    btn.BorderSizePixel = 0
+	local btn = Instance.new("TextButton", parent)
+	btn.Size = UDim2.new(0, 200, 0, 40)
+	btn.Position = UDim2.new(0, 20, 0, posY)
+	btn.Text = "🍎 " .. text .. " [OFF]"
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+	btn.BorderSizePixel = 0
 
-    local state = false
-    local function updateVisual()
-        btn.Text = "🍎 "..text..(state and " [ON]" or " [OFF]")
-        btn.BackgroundColor3 = state and Color3.fromRGB(0,150,0) or Color3.fromRGB(150,0,0)
-    end
+	local state = false
+	local function updateVisual()
+		btn.Text = "🍎 " .. text .. (state and " [ON]" or " [OFF]")
+		btn.BackgroundColor3 = state and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
+	end
 
-    btn.MouseEnter:Connect(function()
-        btn.BackgroundColor3 = state and Color3.fromRGB(0,200,0) or Color3.fromRGB(200,0,0)
-    end)
-    btn.MouseLeave:Connect(updateVisual)
+	btn.MouseEnter:Connect(function()
+		btn.BackgroundColor3 = state and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(200, 0, 0)
+	end)
 
-    btn.MouseButton1Click:Connect(function()
-        state = not state
-        updateVisual()
-        callback(state)
-    end)
+	btn.MouseLeave:Connect(updateVisual)
 
-    updateVisual()
-    return function() return state end
+	btn.MouseButton1Click:Connect(function()
+		state = not state
+		updateVisual()
+		callback(state)
+	end)
+
+	updateVisual()
+	return function() return state end
 end
 
 ---------------------------------------------------
