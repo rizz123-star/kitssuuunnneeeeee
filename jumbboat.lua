@@ -283,79 +283,92 @@ game:GetService("RunService").Stepped:Connect(function()
     end
 end)
 
--- FLY MODE 
+-- // FLY MODE
 local flying = false
 local flySpeed = 80
 local bodyVel, bodyGyro
 local flyAnim, flyTrack
 local windPart
 
--- Animasi pose superman (ganti asset id dengan animasi kamu)
+-- Animasi Fly (bisa ganti dengan animasi custom kamu)
 flyAnim = Instance.new("Animation")
-flyAnim.AnimationId = "rbxassetid://507776043" -- contoh animasi terbang
+flyAnim.AnimationId = "rbxassetid://507776043" -- animasi contoh (swim/pose)
 
-makeToggle(mainTab,120,"Superman Fly",function(on)
-    flying = on
+makeToggle(mainTab,120,"Fly",function(on)
     local char = player.Character
-    if not char then return end
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
     local root = char:WaitForChild("HumanoidRootPart")
     local hum = char:FindFirstChildOfClass("Humanoid")
 
+    flying = on
     if on then
         hum.PlatformStand = true
 
-        bodyVel = Instance.new("BodyVelocity", root)
+        -- BodyVelocity untuk gerakan terbang
+        bodyVel = Instance.new("BodyVelocity")
         bodyVel.MaxForce = Vector3.new(1e5,1e5,1e5)
         bodyVel.Velocity = Vector3.new()
+        bodyVel.Parent = root
 
-        bodyGyro = Instance.new("BodyGyro", root)
+        -- BodyGyro biar player selalu hadap sesuai kamera
+        bodyGyro = Instance.new("BodyGyro")
         bodyGyro.MaxTorque = Vector3.new(1e5,1e5,1e5)
         bodyGyro.P = 1e4
+        bodyGyro.CFrame = root.CFrame
+        bodyGyro.Parent = root
 
-        -- Play animasi
+        -- Mainkan animasi terbang
         flyTrack = hum:LoadAnimation(flyAnim)
         flyTrack.Priority = Enum.AnimationPriority.Action
         flyTrack:Play()
 
-        -- Tambahin efek angin
-        windPart = Instance.new("ParticleEmitter", root)
-        windPart.Texture = "rbxassetid://242861199" -- efek angin putih
+        -- Efek angin biar realistis
+        windPart = Instance.new("ParticleEmitter")
+        windPart.Parent = root
+        windPart.Texture = "rbxassetid://242861199"
         windPart.Rate = 40
         windPart.Lifetime = NumberRange.new(0.2,0.4)
-        windPart.Speed = NumberRange.new(15,25)
+        windPart.Speed = NumberRange.new(20,30)
         windPart.Rotation = NumberRange.new(0,360)
         windPart.RotSpeed = NumberRange.new(-200,200)
         windPart.VelocitySpread = 180
         windPart.Size = NumberSequence.new({
-            NumberSequenceKeypoint.new(0,0.8),
+            NumberSequenceKeypoint.new(0,1),
             NumberSequenceKeypoint.new(1,0.2)
         })
         windPart.Transparency = NumberSequence.new({
-            NumberSequenceKeypoint.new(0,0.3),
+            NumberSequenceKeypoint.new(0,0.2),
             NumberSequenceKeypoint.new(1,1)
         })
     else
-        if bodyVel then bodyVel:Destroy() end
-        if bodyGyro then bodyGyro:Destroy() end
-        hum.PlatformStand = false
-
-        -- Stop animasi
-        if flyTrack then flyTrack:Stop() end
-
-        -- Hapus efek angin
-        if windPart then windPart:Destroy() end
+        -- Matikan semua saat off
+        if bodyVel then bodyVel:Destroy() bodyVel=nil end
+        if bodyGyro then bodyGyro:Destroy() bodyGyro=nil end
+        if flyTrack then flyTrack:Stop() flyTrack=nil end
+        if windPart then windPart:Destroy() windPart=nil end
+        if hum then hum.PlatformStand = false end
     end
 end)
 
--- Gerak sesuai kamera
+-- // Update posisi fly setiap frame
 game:GetService("RunService").RenderStepped:Connect(function()
     if flying and player.Character and bodyVel and bodyGyro then
         local root = player.Character:FindFirstChild("HumanoidRootPart")
         if not root then return end
         local camCF = workspace.CurrentCamera.CFrame
         bodyGyro.CFrame = camCF
-        local dir = camCF.LookVector
-        bodyVel.Velocity = dir * flySpeed
+
+        -- Gerakan sesuai input WASD
+        local moveDir = Vector3.zero
+        local uis = game:GetService("UserInputService")
+        if uis:IsKeyDown(Enum.KeyCode.W) then moveDir += camCF.LookVector end
+        if uis:IsKeyDown(Enum.KeyCode.S) then moveDir -= camCF.LookVector end
+        if uis:IsKeyDown(Enum.KeyCode.A) then moveDir -= camCF.RightVector end
+        if uis:IsKeyDown(Enum.KeyCode.D) then moveDir += camCF.RightVector end
+        if uis:IsKeyDown(Enum.KeyCode.Space) then moveDir += Vector3.new(0,1,0) end
+        if uis:IsKeyDown(Enum.KeyCode.LeftControl) then moveDir -= Vector3.new(0,1,0) end
+
+        bodyVel.Velocity = moveDir.Unit * flySpeed
     end
 end)
 
