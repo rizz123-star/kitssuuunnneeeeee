@@ -67,7 +67,6 @@ titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextSize = 16
 titleLabel.BackgroundTransparency = 1
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-titleLabel.TextScaled = true
 
 -- ❌ CLOSE BUTTON
 local closeBtn = Instance.new("TextButton", titleBar)
@@ -75,7 +74,7 @@ closeBtn.Size = UDim2.new(0, 25, 0, 25)
 closeBtn.Position = UDim2.new(1, -30, 0.5, -12)
 closeBtn.Text = "✖"
 closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextScaled = true
+closeBtn.TextSize = 14
 closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 closeBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 closeBtn.BorderSizePixel = 0
@@ -135,7 +134,7 @@ local function createTab(name)
 	btn.Text = "🍎 " .. name
 	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
 	btn.Font = Enum.Font.Gotham
-	btn.TextScaled = true
+	btn.TextSize = 14
 	btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 	btn.BorderSizePixel = 0
 	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
@@ -169,6 +168,8 @@ local function makeToggle(parent, posY, text, callback)
 	btn.Position = UDim2.new(0, 20, 0, posY)
 	btn.Text = "🍎 " .. text .. " [OFF]"
 	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 14
 	btn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
 	btn.BorderSizePixel = 0
 
