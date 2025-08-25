@@ -276,12 +276,6 @@ end)
 local flying = false
 local flySpeed = 80
 local bodyVel, bodyGyro
-local flyAnim, flyTrack
-local windPart
-
--- Animasi Fly (bisa ganti dengan animasi custom kamu)
-flyAnim = Instance.new("Animation")
-flyAnim.AnimationId = "rbxassetid://507776043" -- animasi contoh (swim/pose)
 
 makeToggle(mainTab,120,"Fly",function(on)
     local char = player.Character
@@ -291,7 +285,8 @@ makeToggle(mainTab,120,"Fly",function(on)
 
     flying = on
     if on then
-        hum.PlatformStand = true
+        -- Jangan pakai PlatformStand biar gak kaku
+        hum:ChangeState(Enum.HumanoidStateType.Physics)
 
         -- BodyVelocity untuk gerakan terbang
         bodyVel = Instance.new("BodyVelocity")
@@ -306,36 +301,11 @@ makeToggle(mainTab,120,"Fly",function(on)
         bodyGyro.CFrame = root.CFrame
         bodyGyro.Parent = root
 
-        -- Mainkan animasi terbang
-        flyTrack = hum:LoadAnimation(flyAnim)
-        flyTrack.Priority = Enum.AnimationPriority.Action
-        flyTrack:Play()
-
-        -- Efek angin biar realistis
-        windPart = Instance.new("ParticleEmitter")
-        windPart.Parent = root
-        windPart.Texture = "rbxassetid://242861199"
-        windPart.Rate = 40
-        windPart.Lifetime = NumberRange.new(0.2,0.4)
-        windPart.Speed = NumberRange.new(20,30)
-        windPart.Rotation = NumberRange.new(0,360)
-        windPart.RotSpeed = NumberRange.new(-200,200)
-        windPart.VelocitySpread = 180
-        windPart.Size = NumberSequence.new({
-            NumberSequenceKeypoint.new(0,1),
-            NumberSequenceKeypoint.new(1,0.2)
-        })
-        windPart.Transparency = NumberSequence.new({
-            NumberSequenceKeypoint.new(0,0.2),
-            NumberSequenceKeypoint.new(1,1)
-        })
     else
         -- Matikan semua saat off
         if bodyVel then bodyVel:Destroy() bodyVel=nil end
         if bodyGyro then bodyGyro:Destroy() bodyGyro=nil end
-        if flyTrack then flyTrack:Stop() flyTrack=nil end
-        if windPart then windPart:Destroy() windPart=nil end
-        if hum then hum.PlatformStand = false end
+        if hum then hum:ChangeState(Enum.HumanoidStateType.GettingUp) end
     end
 end)
 
@@ -357,7 +327,6 @@ game:GetService("RunService").RenderStepped:Connect(function()
         if uis:IsKeyDown(Enum.KeyCode.Space) then moveDir += Vector3.new(0,1,0) end
         if uis:IsKeyDown(Enum.KeyCode.LeftControl) then moveDir -= Vector3.new(0,1,0) end
 
-        -- Fix biar gak error kalau Vector3.zero
         if moveDir.Magnitude > 0 then
             bodyVel.Velocity = moveDir.Unit * flySpeed
         else
