@@ -368,7 +368,12 @@ game:GetService("RunService").RenderStepped:Connect(function()
         if uis:IsKeyDown(Enum.KeyCode.Space) then moveDir += Vector3.new(0,1,0) end
         if uis:IsKeyDown(Enum.KeyCode.LeftControl) then moveDir -= Vector3.new(0,1,0) end
 
-        bodyVel.Velocity = moveDir.Unit * flySpeed
+        -- Fix biar gak error kalau Vector3.zero
+        if moveDir.Magnitude > 0 then
+            bodyVel.Velocity = moveDir.Unit * flySpeed
+        else
+            bodyVel.Velocity = Vector3.zero
+        end
     end
 end)
 
@@ -381,8 +386,38 @@ scroll.Size = UDim2.new(0,220,0,200)
 scroll.Position = UDim2.new(0,20,0,20)
 scroll.CanvasSize = UDim2.new(0,0,0,0)
 scroll.ScrollBarThickness = 6
+scroll.ScrollBarImageColor3 = Color3.fromRGB(255,255,255) -- scrollbar putih
+scroll.ScrollBarImageTransparency = 0.3 -- transparan dikit biar elegan
 scroll.BackgroundColor3 = Color3.fromRGB(30,30,30)
 scroll.BorderSizePixel = 0
+scroll.ClipsDescendants = true
+
+-- Efek gradient di kanan biar kelihatan modern
+local gradient = Instance.new("UIGradient", scroll)
+gradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(200,200,200))
+}
+gradient.Rotation = 90
+gradient.Transparency = NumberSequence.new{
+    NumberSequenceKeypoint.new(0, 1),
+    NumberSequenceKeypoint.new(0.2, 0.5),
+    NumberSequenceKeypoint.new(1, 1)
+}
+
+-- Layout otomatis biar tombol rapi
+local layout = Instance.new("UIListLayout", scroll)
+layout.Padding = UDim.new(0,5)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local function teleportToPlayer(plr)
+    if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+        local myChar = player.Character
+        if myChar and myChar:FindFirstChild("HumanoidRootPart") then
+            myChar.HumanoidRootPart.CFrame = plr.Character.HumanoidRootPart.CFrame + Vector3.new(2,1,2)
+        end
+    end
+end
 
 local function createPlayerBtn(plr)
     local btn = Instance.new("TextButton")
@@ -394,14 +429,11 @@ local function createPlayerBtn(plr)
     btn.Text = "🍎 " .. plr.Name
     btn.Parent = scroll
     btn.BorderSizePixel = 0
+    btn.AutoButtonColor = true
 
+    -- Auto teleport pas klik
     btn.MouseButton1Click:Connect(function()
-        if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-            local myChar = player.Character
-            if myChar and myChar:FindFirstChild("HumanoidRootPart") then
-                myChar.HumanoidRootPart.CFrame = plr.Character.HumanoidRootPart.CFrame + Vector3.new(2,1,2)
-            end
-        end
+        teleportToPlayer(plr)
     end)
 
     return btn
@@ -409,15 +441,11 @@ end
 
 local function refreshPlayers()
     scroll:ClearAllChildren()
-    local y = 0
     for _,plr in pairs(game.Players:GetPlayers()) do
         if plr ~= player then
-            local btn = createPlayerBtn(plr)
-            btn.Position = UDim2.new(0,5,0,y)
-            y = y + 35
+            createPlayerBtn(plr)
         end
     end
-    scroll.CanvasSize = UDim2.new(0,0,0,y)
 end
 
 refreshPlayers()
