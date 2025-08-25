@@ -1,5 +1,12 @@
 -- FRAME UTAMA
-local mainFrame = Instance.new("Frame", gui)
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui")
+gui.Name = "RizzHubUI"
+gui.Parent = player:WaitForChild("PlayerGui")
+gui.ResetOnSpawn = false
+
+-- FRAME UTAMA
+local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 450, 0, 300)
 mainFrame.Position = UDim2.new(0.5, -225, 0.5, -150)
 mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
@@ -7,8 +14,9 @@ mainFrame.BackgroundTransparency = 0.1
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
 mainFrame.Draggable = true
+mainFrame.Parent = gui
 
--- RESIZE HANDLE (pojok kanan bawah)
+-- RESIZE HANDLE
 local resizeHandle = Instance.new("Frame", mainFrame)
 resizeHandle.Size = UDim2.new(0, 15, 0, 15)
 resizeHandle.Position = UDim2.new(1, -15, 1, -15)
@@ -16,36 +24,35 @@ resizeHandle.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
 resizeHandle.BackgroundTransparency = 0.3
 resizeHandle.BorderSizePixel = 0
 resizeHandle.Active = true
-
 Instance.new("UICorner", resizeHandle).CornerRadius = UDim.new(0, 4)
 
--- RESIZE SYSTEM
+-- SISTEM RESIZE
 local uis = game:GetService("UserInputService")
 local resizing = false
 local startPos, startSize
 
 resizeHandle.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        resizing = true
-        startPos = uis:GetMouseLocation()
-        startSize = mainFrame.Size
-    end
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		resizing = true
+		startPos = uis:GetMouseLocation()
+		startSize = mainFrame.Size
+	end
 end)
 
 uis.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        resizing = false
-    end
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		resizing = false
+	end
 end)
 
 uis.InputChanged:Connect(function(input)
-    if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local mousePos = uis:GetMouseLocation()
-        local diff = mousePos - startPos
-        local newX = math.max(300, startSize.X.Offset + diff.X) -- minimal 300px
-        local newY = math.max(200, startSize.Y.Offset + diff.Y) -- minimal 200px
-        mainFrame.Size = UDim2.new(0, newX, 0, newY)
-    end
+	if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
+		local mousePos = uis:GetMouseLocation()
+		local diff = mousePos - startPos
+		local newX = math.max(300, startSize.X.Offset + diff.X)
+		local newY = math.max(200, startSize.Y.Offset + diff.Y)
+		mainFrame.Size = UDim2.new(0, newX, 0, newY)
+	end
 end)
 
 -- TITLE BAR
@@ -54,7 +61,7 @@ titleBar.Size = UDim2.new(1,0,0,35)
 titleBar.BackgroundColor3 = Color3.fromRGB(40,40,40)
 titleBar.BorderSizePixel = 0
 titleBar.Active = true
-titleBar.Draggable = true -- drag lewat title bar juga bisa
+titleBar.Draggable = true
 
 -- JUDUL
 local titleLabel = Instance.new("TextLabel", titleBar)
@@ -66,7 +73,7 @@ titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextSize = 16
 titleLabel.BackgroundTransparency = 1
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-titleLabel.TextScaled = true -- text auto scale
+titleLabel.TextScaled = true
 
 -- CLOSE BUTTON
 local closeBtn = Instance.new("TextButton", titleBar)
@@ -80,7 +87,7 @@ closeBtn.BackgroundColor3 = Color3.fromRGB(200,0,0)
 closeBtn.BorderSizePixel = 0
 Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0,6)
 closeBtn.MouseButton1Click:Connect(function()
-    mainFrame.Visible = false
+	mainFrame.Visible = false
 end)
 
 -- SIDEBAR
@@ -90,7 +97,7 @@ sidebar.Position = UDim2.new(0,0,0,35)
 sidebar.BackgroundColor3 = Color3.fromRGB(30,30,30)
 sidebar.BorderSizePixel = 0
 
--- CONTENT
+-- CONTENT AREA
 local content = Instance.new("Frame", mainFrame)
 content.Size = UDim2.new(1, -120, 1, -35)
 content.Position = UDim2.new(0, 120, 0, 35)
@@ -99,37 +106,37 @@ content.BackgroundTransparency = 1
 -- SISTEM TAB
 local tabs = {}
 local function createTab(name)
-    local btn = Instance.new("TextButton", sidebar)
-    btn.Size = UDim2.new(1, -10, 0, 40)
-    btn.Position = UDim2.new(0, 5, 0, #tabs * 45 + 10)
-    btn.Text = "🍎 "..name
-    btn.TextColor3 = Color3.fromRGB(255,255,255)
-    btn.Font = Enum.Font.Gotham
-    btn.TextScaled = true
-    btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-    btn.BorderSizePixel = 0
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
+	local btn = Instance.new("TextButton", sidebar)
+	btn.Size = UDim2.new(1, -10, 0, 40)
+	btn.Position = UDim2.new(0, 5, 0, #tabs * 45 + 10)
+	btn.Text = "🍎 "..name
+	btn.TextColor3 = Color3.fromRGB(255,255,255)
+	btn.Font = Enum.Font.Gotham
+	btn.TextScaled = true
+	btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+	btn.BorderSizePixel = 0
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
 
-    local frame = Instance.new("ScrollingFrame", content)
-    frame.Size = UDim2.new(1, -10, 1, -10)
-    frame.Position = UDim2.new(0,5,0,5)
-    frame.Visible = false
-    frame.BackgroundTransparency = 1
-    frame.ScrollBarThickness = 6
-    frame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    frame.CanvasSize = UDim2.new(0,0,0,0)
-    frame.ScrollBarImageColor3 = Color3.fromRGB(255,255,255)
-    frame.ScrollBarImageTransparency = 0.3
+	local frame = Instance.new("ScrollingFrame", content)
+	frame.Size = UDim2.new(1, -10, 1, -10)
+	frame.Position = UDim2.new(0,5,0,5)
+	frame.Visible = false
+	frame.BackgroundTransparency = 1
+	frame.ScrollBarThickness = 6
+	frame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+	frame.CanvasSize = UDim2.new(0,0,0,0)
+	frame.ScrollBarImageColor3 = Color3.fromRGB(255,255,255)
+	frame.ScrollBarImageTransparency = 0.3
 
-    btn.MouseButton1Click:Connect(function()
-        for _,t in pairs(tabs) do
-            t.frame.Visible = false
-        end
-        frame.Visible = true
-    end)
+	btn.MouseButton1Click:Connect(function()
+		for _,t in pairs(tabs) do
+			t.frame.Visible = false
+		end
+		frame.Visible = true
+	end)
 
-    table.insert(tabs, {btn = btn, frame = frame})
-    return frame
+	table.insert(tabs, {btn = btn, frame = frame})
+	return frame
 end
 
 -- UTILS: bikin tombol ON/OFF
