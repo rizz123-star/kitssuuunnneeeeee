@@ -283,6 +283,65 @@ game:GetService("RunService").Stepped:Connect(function()
     end
 end)
 
+-- // SIZE CHANGER
+local hum
+local currentScale = 1
+local originalScales = {}
+
+-- fungsi apply scale ke humanoid
+local function applyScale(scale)
+    if not hum then return end
+    if hum:FindFirstChild("BodyDepthScale") then hum.BodyDepthScale.Value = originalScales.Depth * scale end
+    if hum:FindFirstChild("BodyHeightScale") then hum.BodyHeightScale.Value = originalScales.Height * scale end
+    if hum:FindFirstChild("BodyWidthScale") then hum.BodyWidthScale.Value = originalScales.Width * scale end
+    if hum:FindFirstChild("HeadScale") then hum.HeadScale.Value = originalScales.Head * scale end
+end
+
+-- setup character awal
+local function setupChar()
+    local char = player.Character
+    if not char then return end
+    hum = char:FindFirstChildOfClass("Humanoid")
+    if hum then
+        originalScales = {
+            Depth = hum:FindFirstChild("BodyDepthScale") and hum.BodyDepthScale.Value or 1,
+            Height = hum:FindFirstChild("BodyHeightScale") and hum.BodyHeightScale.Value or 1,
+            Width = hum:FindFirstChild("BodyWidthScale") and hum.BodyWidthScale.Value or 1,
+            Head = hum:FindFirstChild("HeadScale") and hum.HeadScale.Value or 1
+        }
+        currentScale = 1
+    end
+end
+setupChar()
+player.CharacterAdded:Connect(setupChar)
+
+-- Tombol utama (Big, Small, Normal)
+makeButton(mainTab,120,"Big",function()
+    currentScale = 2
+    applyScale(currentScale)
+end)
+
+makeButton(mainTab,120,"Small",function()
+    currentScale = 0.5
+    applyScale(currentScale)
+end)
+
+makeButton(mainTab,120,"Normal",function()
+    currentScale = 1
+    applyScale(currentScale)
+end)
+
+-- Tombol tambahan + / -
+makeButton(mainTab,60,"+",function()
+    currentScale = currentScale + 0.1
+    applyScale(currentScale)
+end)
+
+makeButton(mainTab,60,"-",function()
+    currentScale = math.max(0.1, currentScale - 0.1)
+    applyScale(currentScale)
+end)
+
 -- // FLY MODE
 local flying = false
 local flySpeed = 80
