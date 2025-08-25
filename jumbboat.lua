@@ -1,7 +1,13 @@
--- GUI RIZZ TOOLS HUB
+-- 🍎 RIZZ TOOLS HUB FINAL
 local uis = game:GetService("UserInputService")
-local gui = Instance.new("ScreenGui", game.CoreGui)
+local players = game:GetService("Players")
+local plr = players.LocalPlayer
+
+-- GUI HOLDER
+local gui = Instance.new("ScreenGui")
 gui.Name = "RizzToolsHub"
+gui.ResetOnSpawn = false
+gui.Parent = game.CoreGui
 
 -- 🖼 FRAME UTAMA
 local mainFrame = Instance.new("Frame", gui)
@@ -12,44 +18,6 @@ mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
 Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 8)
 
--- 🎛️ RESIZE HANDLE
-local resizeHandle = Instance.new("Frame", mainFrame)
-resizeHandle.Size = UDim2.new(0, 15, 0, 15)
-resizeHandle.Position = UDim2.new(1, -15, 1, -15)
-resizeHandle.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
-resizeHandle.BackgroundTransparency = 0.4
-resizeHandle.BorderSizePixel = 0
-resizeHandle.Active = true
-Instance.new("UICorner", resizeHandle).CornerRadius = UDim.new(0, 4)
-
--- ⚙️ SISTEM RESIZE
-local resizing = false
-local startPos, startSize
-
-resizeHandle.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		resizing = true
-		startPos = uis:GetMouseLocation()
-		startSize = mainFrame.Size
-	end
-end)
-
-uis.InputEnded:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		resizing = false
-	end
-end)
-
-uis.InputChanged:Connect(function(input)
-	if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
-		local mousePos = uis:GetMouseLocation()
-		local diff = mousePos - startPos
-		local newX = math.max(350, startSize.X.Offset + diff.X)
-		local newY = math.max(220, startSize.Y.Offset + diff.Y)
-		mainFrame.Size = UDim2.new(0, newX, 0, newY)
-	end
-end)
-
 -- 🏷️ TITLE BAR
 local titleBar = Instance.new("Frame", mainFrame)
 titleBar.Size = UDim2.new(1, 0, 0, 35)
@@ -58,7 +26,6 @@ titleBar.BorderSizePixel = 0
 Instance.new("UICorner", titleBar).CornerRadius = UDim.new(0, 6)
 titleBar.Active = true
 
--- 📝 JUDUL
 local titleLabel = Instance.new("TextLabel", titleBar)
 titleLabel.Size = UDim2.new(1, -40, 1, 0)
 titleLabel.Position = UDim2.new(0, 12, 0, 0)
@@ -82,45 +49,40 @@ closeBtn.BorderSizePixel = 0
 Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
 
 closeBtn.MouseEnter:Connect(function()
-	closeBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+    closeBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
 end)
-
 closeBtn.MouseLeave:Connect(function()
-	closeBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+    closeBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 end)
-
 closeBtn.MouseButton1Click:Connect(function()
-	mainFrame.Visible = false
+    mainFrame.Visible = false
 end)
 
--- 🖱️ SISTEM DRAG MANUAL
-local dragging = false
-local dragStart, startPos
+-- 🔄 REOPEN KEY (RightShift)
+uis.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.RightShift then
+        mainFrame.Visible = not mainFrame.Visible
+    end
+end)
 
+-- 🖱️ DRAG SYSTEM
+local dragging, dragStart, startPos
 titleBar.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = true
-		dragStart = input.Position
-		startPos = mainFrame.Position
-
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
-		end)
-	end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
 end)
-
 uis.InputChanged:Connect(function(input)
-	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-		local delta = input.Position - dragStart
-		mainFrame.Position = UDim2.new(
-			startPos.X.Scale,
-			startPos.X.Offset + delta.X,
-			startPos.Y.Scale,
-			startPos.Y.Offset + delta.Y
-		)
-	end
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+                                       startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
 end)
 
 -- 📑 SIDEBAR
@@ -139,112 +101,90 @@ content.BackgroundTransparency = 1
 
 -- 📌 SISTEM TAB
 local tabs = {}
-
 local function createTab(name)
-	local btn = Instance.new("TextButton", sidebar)
-	btn.Size = UDim2.new(1, -14, 0, 40)
-	btn.Position = UDim2.new(0, 7, 0, #tabs * 45 + 10)
-	btn.Text = "🍎 " .. name
-	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-	btn.Font = Enum.Font.Gotham
-	btn.TextSize = 14
-	btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-	btn.BorderSizePixel = 0
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    local btn = Instance.new("TextButton", sidebar)
+    btn.Size = UDim2.new(1, -14, 0, 40)
+    btn.Position = UDim2.new(0, 7, 0, #tabs * 45 + 10)
+    btn.Text = "🍎 " .. name
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 14
+    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    btn.BorderSizePixel = 0
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
 
-	btn.MouseEnter:Connect(function()
-		btn.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
-	end)
+    btn.MouseEnter:Connect(function() btn.BackgroundColor3 = Color3.fromRGB(65, 65, 65) end)
+    btn.MouseLeave:Connect(function() btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45) end)
 
-	btn.MouseLeave:Connect(function()
-		btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-	end)
+    local frame = Instance.new("ScrollingFrame", content)
+    frame.Size = UDim2.new(1, -10, 1, -10)
+    frame.Position = UDim2.new(0, 5, 0, 5)
+    frame.Visible = false
+    frame.BackgroundTransparency = 1
+    frame.ScrollBarThickness = 6
+    frame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    frame.CanvasSize = UDim2.new(0, 0, 0, 0)
+    frame.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
+    frame.ScrollBarImageTransparency = 0.3
 
-	local frame = Instance.new("ScrollingFrame", content)
-	frame.Size = UDim2.new(1, -10, 1, -10)
-	frame.Position = UDim2.new(0, 5, 0, 5)
-	frame.Visible = false
-	frame.BackgroundTransparency = 1
-	frame.ScrollBarThickness = 6
-	frame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-	frame.CanvasSize = UDim2.new(0, 0, 0, 0)
-	frame.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
-	frame.ScrollBarImageTransparency = 0.3
+    local layout = Instance.new("UIListLayout", frame)
+    layout.Padding = UDim.new(0, 6)
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
 
-	local layout = Instance.new("UIListLayout", frame)
-	layout.Padding = UDim.new(0, 6)
-	layout.SortOrder = Enum.SortOrder.LayoutOrder
+    btn.MouseButton1Click:Connect(function()
+        for _, t in pairs(tabs) do t.frame.Visible = false end
+        frame.Visible = true
+    end)
 
-	btn.MouseButton1Click:Connect(function()
-		for _, t in pairs(tabs) do
-			t.frame.Visible = false
-		end
-		frame.Visible = true
-	end)
-
-	table.insert(tabs, {btn = btn, frame = frame})
-	return frame
+    table.insert(tabs, {btn = btn, frame = frame})
+    return frame
 end
 
 -- ✅ UTIL: BIKIN BUTTON
 local function makeButton(parent, text, callback)
-	local btn = Instance.new("TextButton", parent)
-	btn.Size = UDim2.new(0, 200, 0, 40)
-	btn.Text = "🍎 " .. text
-	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-	btn.Font = Enum.Font.Gotham
-	btn.TextSize = 14
-	btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-	btn.BorderSizePixel = 0
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    local btn = Instance.new("TextButton", parent)
+    btn.Size = UDim2.new(0, 200, 0, 40)
+    btn.Text = "🍎 " .. text
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 14
+    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    btn.BorderSizePixel = 0
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
 
-	btn.MouseEnter:Connect(function()
-		btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-	end)
-
-	btn.MouseLeave:Connect(function()
-		btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-	end)
-
-	btn.MouseButton1Click:Connect(callback)
-	return btn
+    btn.MouseEnter:Connect(function() btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70) end)
+    btn.MouseLeave:Connect(function() btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50) end)
+    btn.MouseButton1Click:Connect(callback)
+    return btn
 end
 
 -- ✅ UTIL: BIKIN TOGGLE
 local function makeToggle(parent, text, callback)
-	local btn = Instance.new("TextButton", parent)
-	btn.Size = UDim2.new(0, 200, 0, 40)
-	btn.Text = "🍎 " .. text .. " [OFF]"
-	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-	btn.Font = Enum.Font.Gotham
-	btn.TextSize = 14
-	btn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-	btn.BorderSizePixel = 0
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    local btn = Instance.new("TextButton", parent)
+    btn.Size = UDim2.new(0, 200, 0, 40)
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 14
+    btn.BorderSizePixel = 0
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
 
-	local state = false
+    local state = false
+    local function updateVisual()
+        btn.Text = "🍎 " .. text .. (state and " [ON]" or " [OFF]")
+        btn.BackgroundColor3 = state and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
+    end
 
-	local function updateVisual()
-		btn.Text = "🍎 " .. text .. (state and " [ON]" or " [OFF]")
-		btn.BackgroundColor3 = state and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
-	end
-
-	btn.MouseEnter:Connect(function()
-		btn.BackgroundColor3 = state and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(200, 0, 0)
-	end)
-
-	btn.MouseLeave:Connect(updateVisual)
-
-	btn.MouseButton1Click:Connect(function()
-		state = not state
-		updateVisual()
-		callback(state)
-	end)
-
-	updateVisual()
-	return function()
-		return state
-	end
+    btn.MouseEnter:Connect(function()
+        btn.BackgroundColor3 = state and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(200, 0, 0)
+    end)
+    btn.MouseLeave:Connect(updateVisual)
+    btn.MouseButton1Click:Connect(function()
+        state = not state
+        updateVisual()
+        callback(state)
+    end)
+    updateVisual()
+    return function() return state end
 end
 
 ---------------------------------------------------
