@@ -5,8 +5,48 @@ mainFrame.Position = UDim2.new(0.5, -225, 0.5, -150)
 mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 mainFrame.BackgroundTransparency = 0.1
 mainFrame.BorderSizePixel = 0
-mainFrame.Active = true -- penting biar bisa geser
-mainFrame.Draggable = true -- draggable seluruh frame
+mainFrame.Active = true
+mainFrame.Draggable = true
+
+-- RESIZE HANDLE (pojok kanan bawah)
+local resizeHandle = Instance.new("Frame", mainFrame)
+resizeHandle.Size = UDim2.new(0, 15, 0, 15)
+resizeHandle.Position = UDim2.new(1, -15, 1, -15)
+resizeHandle.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+resizeHandle.BackgroundTransparency = 0.3
+resizeHandle.BorderSizePixel = 0
+resizeHandle.Active = true
+
+Instance.new("UICorner", resizeHandle).CornerRadius = UDim.new(0, 4)
+
+-- RESIZE SYSTEM
+local uis = game:GetService("UserInputService")
+local resizing = false
+local startPos, startSize
+
+resizeHandle.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        resizing = true
+        startPos = uis:GetMouseLocation()
+        startSize = mainFrame.Size
+    end
+end)
+
+uis.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        resizing = false
+    end
+end)
+
+uis.InputChanged:Connect(function(input)
+    if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local mousePos = uis:GetMouseLocation()
+        local diff = mousePos - startPos
+        local newX = math.max(300, startSize.X.Offset + diff.X) -- minimal 300px
+        local newY = math.max(200, startSize.Y.Offset + diff.Y) -- minimal 200px
+        mainFrame.Size = UDim2.new(0, newX, 0, newY)
+    end
+end)
 
 -- TITLE BAR
 local titleBar = Instance.new("Frame", mainFrame)
