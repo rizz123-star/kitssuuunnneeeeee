@@ -499,9 +499,9 @@ end)
 -- 🛠️ MISC TAB
 local miscTab = createTab("Misc")
 
--- Scrolling Frame Container
+-- 📜 Scrolling Frame
 local miscFrame = Instance.new("ScrollingFrame", miscTab)
-miscFrame.Size = UDim2.new(1, -20, 1, -20) -- full tab dengan margin
+miscFrame.Size = UDim2.new(1, -20, 1, -20)
 miscFrame.Position = UDim2.new(0,10,0,10)
 miscFrame.BackgroundTransparency = 1
 miscFrame.ScrollBarThickness = 6
@@ -513,9 +513,10 @@ local layout = Instance.new("UIListLayout", miscFrame)
 layout.FillDirection = Enum.FillDirection.Vertical
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 layout.SortOrder = Enum.SortOrder.LayoutOrder
-layout.Padding = UDim.new(0,8) -- jarak antar item
+layout.Padding = UDim.new(0,8)
 
--- Fungsi bikin tombol biar lebih gampang
+---------------------------------------------------
+-- 📌 Fungsi UI Helper
 local function makeButton(text, callback)
     local btn = Instance.new("TextButton", miscFrame)
     btn.Size = UDim2.new(0,250,0,40)
@@ -526,13 +527,21 @@ local function makeButton(text, callback)
     btn.BackgroundColor3 = Color3.fromRGB(50,50,50)
     btn.BorderSizePixel = 0
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
+
+    -- Efek hover
+    btn.MouseEnter:Connect(function()
+        btn.BackgroundColor3 = Color3.fromRGB(70,70,70)
+    end)
+    btn.MouseLeave:Connect(function()
+        btn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    end)
+
     if callback then
         btn.MouseButton1Click:Connect(callback)
     end
     return btn
 end
 
--- Fungsi bikin label
 local function makeLabel(text)
     local lbl = Instance.new("TextLabel", miscFrame)
     lbl.Size = UDim2.new(0,300,0,30)
@@ -545,15 +554,16 @@ local function makeLabel(text)
     return lbl
 end
 
+---------------------------------------------------
 -- 🔄 Rejoin
-makeButton("🍎 Rejoin Server", function()
+makeButton("🔄 Rejoin Server", function()
     game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
 end)
 
 -- 🌐 Join Server by ID
 local joinBox = Instance.new("TextBox", miscFrame)
 joinBox.Size = UDim2.new(0,250,0,40)
-joinBox.PlaceholderText = "🍎 Enter Server ID"
+joinBox.PlaceholderText = "Enter Server ID..."
 joinBox.Text = ""
 joinBox.TextColor3 = Color3.fromRGB(255,255,255)
 joinBox.Font = Enum.Font.Gotham
@@ -562,22 +572,27 @@ joinBox.BackgroundColor3 = Color3.fromRGB(50,50,50)
 joinBox.BorderSizePixel = 0
 Instance.new("UICorner", joinBox).CornerRadius = UDim.new(0,6)
 
-makeButton("🍎 Join Server", function()
+makeButton("🌐 Join Server", function(btn)
     local serverId = joinBox.Text
     if serverId ~= "" then
         game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, serverId, game.Players.LocalPlayer)
+    else
+        btn.Text = "⚠️ Invalid ID"
+        task.wait(1.5)
+        btn.Text = "🌐 Join Server"
     end
 end)
 
--- 🆔 Server ID
-makeLabel("Server ID: "..game.JobId)
+---------------------------------------------------
+-- 🆔 Server Info
+makeLabel("🆔 Server ID: "..game.JobId)
 
--- 👥 Jumlah Player
-local playerCountLabel = makeLabel("Players in Server: "..#game.Players:GetPlayers())
+local playerCountLabel = makeLabel("👥 Players in Server: "..#game.Players:GetPlayers())
 game:GetService("RunService").RenderStepped:Connect(function()
-    playerCountLabel.Text = "Players in Server: "..#game.Players:GetPlayers()
+    playerCountLabel.Text = "👥 Players in Server: "..#game.Players:GetPlayers()
 end)
 
+---------------------------------------------------
 -- 📋 Copy Player List
 makeButton("📋 Copy Player List", function(btn)
     local names = {}
@@ -585,11 +600,13 @@ makeButton("📋 Copy Player List", function(btn)
         table.insert(names, plr.Name.." ("..plr.DisplayName..")")
     end
     local text = table.concat(names, ", ")
+
     if setclipboard then
         setclipboard(text)
     elseif toclipboard then
         toclipboard(text)
     end
+
     btn.Text = "✅ Copied!"
     task.wait(1.5)
     btn.Text = "📋 Copy Player List"
@@ -603,6 +620,7 @@ makeButton("🔗 Copy Game Link", function(btn)
     elseif toclipboard then
         toclipboard(link)
     end
+
     btn.Text = "✅ Link Copied!"
     task.wait(1.5)
     btn.Text = "🔗 Copy Game Link"
@@ -613,6 +631,7 @@ makeButton("🎲 Hop Server", function()
     game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
 end)
 ---------------------------------------------------
+
 -- DEFAULT TAB AKTIF
 tabs[1].frame.Visible = true
 
