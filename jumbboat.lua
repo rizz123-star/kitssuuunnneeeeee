@@ -49,6 +49,7 @@ end
 
 -- Panggil notifikasi sekali setelah exec
 showSuccess("Hub Loaded Successfully!")
+
 -- FRAME UTAMA
 local mainFrame = Instance.new("Frame", gui)
 mainFrame.Size = UDim2.new(0, 450, 0, 300)
@@ -63,7 +64,6 @@ titleBar.Size = UDim2.new(1,0,0,35)
 titleBar.BackgroundColor3 = Color3.fromRGB(40,40,40)
 titleBar.BorderSizePixel = 0
 titleBar.Active = true
-titleBar.Draggable = true
 
 -- JUDUL
 local titleLabel = Instance.new("TextLabel", titleBar)
@@ -100,6 +100,53 @@ local content = Instance.new("Frame", mainFrame)
 content.Size = UDim2.new(1, -120, 1, -35)
 content.Position = UDim2.new(0, 120, 0, 35)
 content.BackgroundTransparency = 1
+
+-- CUSTOM DRAG (biar cuma mainFrame yg gerak)
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+local dragging = false
+local dragStart, startPos
+
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+    end
+end)
+
+titleBar.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(
+            startPos.X.Scale, startPos.X.Offset + delta.X,
+            startPos.Y.Scale, startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+
+        -- Cek kalau frame keluar layar → balikin ke tengah
+        local screenSize = workspace.CurrentCamera.ViewportSize
+        local framePos = mainFrame.AbsolutePosition
+        local frameSize = mainFrame.AbsoluteSize
+
+        if framePos.X < 0 or framePos.Y < 0 or 
+           (framePos.X + frameSize.X) > screenSize.X or 
+           (framePos.Y + frameSize.Y) > screenSize.Y then
+            
+            TweenService:Create(
+                mainFrame,
+                TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                {Position = UDim2.new(0.5, -frameSize.X/2, 0.5, -frameSize.Y/2)}
+            ):Play()
+        end
+    end
+end)
 
 -- SISTEM TAB
 local tabs = {}
