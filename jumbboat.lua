@@ -406,6 +406,9 @@ game.Players.PlayerRemoving:Connect(refreshPlayers)
 -- 🏃 MOVEMENT TAB
 local moveTab = createTab("Movement")
 
+-- Player
+local player = game.Players.LocalPlayer
+
 -- ScrollingFrame biar rapi
 local moveFrame = Instance.new("ScrollingFrame", moveTab)
 moveFrame.Size = UDim2.new(1, -20, 1, -20)
@@ -421,23 +424,72 @@ layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 layout.SortOrder = Enum.SortOrder.LayoutOrder
 layout.Padding = UDim.new(0,8)
 
--- Fungsi bikin TextBox
-local function makeBox(placeholder, default, callback)
-    local box = Instance.new("TextBox", moveFrame)
-    box.Size = UDim2.new(0,250,0,40)
-    box.PlaceholderText = placeholder
-    box.TextColor3 = Color3.fromRGB(255,255,255)
-    box.BackgroundColor3 = Color3.fromRGB(40,40,40)
-    box.ClearTextOnFocus = false
-    box.BorderSizePixel = 0
-    box.Font = Enum.Font.Gotham
-    box.TextSize = 14
-    Instance.new("UICorner", box).CornerRadius = UDim.new(0,6)
-    box.FocusLost:Connect(function()
-        local val = tonumber(box.Text)
-        callback(val or default)
+-- Ambil Humanoid
+local function getHumanoid()
+    if player.Character then
+        return player.Character:FindFirstChildOfClass("Humanoid")
+    end
+    return nil
+end
+
+-- Fungsi buat UI dengan tombol - dan +
+local function makeAdjuster(title, default, step, applyFunc)
+    local holder = Instance.new("Frame", moveFrame)
+    holder.Size = UDim2.new(0, 250, 0, 40)
+    holder.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    holder.BorderSizePixel = 0
+    Instance.new("UICorner", holder).CornerRadius = UDim.new(0,6)
+
+    local label = Instance.new("TextLabel", holder)
+    label.Size = UDim2.new(0.5, 0, 1, 0)
+    label.Text = title..": "..default
+    label.TextColor3 = Color3.fromRGB(255,255,255)
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 14
+    label.BackgroundTransparency = 1
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Position = UDim2.new(0.05,0,0,0)
+
+    local minus = Instance.new("TextButton", holder)
+    minus.Size = UDim2.new(0,40,0,30)
+    minus.Position = UDim2.new(0.6,0,0.1,0)
+    minus.Text = "-"
+    minus.Font = Enum.Font.GothamBold
+    minus.TextSize = 18
+    minus.TextColor3 = Color3.fromRGB(255,255,255)
+    minus.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    minus.BorderSizePixel = 0
+    Instance.new("UICorner", minus).CornerRadius = UDim.new(0,6)
+
+    local plus = Instance.new("TextButton", holder)
+    plus.Size = UDim2.new(0,40,0,30)
+    plus.Position = UDim2.new(0.8,0,0.1,0)
+    plus.Text = "+"
+    plus.Font = Enum.Font.GothamBold
+    plus.TextSize = 18
+    plus.TextColor3 = Color3.fromRGB(255,255,255)
+    plus.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    plus.BorderSizePixel = 0
+    Instance.new("UICorner", plus).CornerRadius = UDim.new(0,6)
+
+    local value = default
+    local function updateLabel()
+        label.Text = title..": "..value
+        applyFunc(value)
+    end
+
+    minus.MouseButton1Click:Connect(function()
+        value = value - step
+        updateLabel()
     end)
-    return box
+
+    plus.MouseButton1Click:Connect(function()
+        value = value + step
+        updateLabel()
+    end)
+
+    updateLabel()
+    return holder
 end
 
 -- Fungsi bikin Toggle
@@ -461,21 +513,16 @@ local function makeToggle(text, callback)
     return btn
 end
 
--- Ambil Humanoid
-local function getHumanoid()
-    return player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-end
-
 -- SPEED
-makeBox("🍎 Speed (default 16)", 16, function(val)
+makeAdjuster("🍎 Speed", 16, 5, function(val)
     local hum = getHumanoid()
     if hum then hum.WalkSpeed = val end
 end)
 
 -- JUMP POWER
-makeBox("🍎 Jump Power (default 50)", 50, function(val)
+makeAdjuster("🍎 Jump Power", 50, 5, function(val)
     local hum = getHumanoid()
-    if hum then 
+    if hum then
         hum.UseJumpPower = true
         hum.JumpPower = val
     end
