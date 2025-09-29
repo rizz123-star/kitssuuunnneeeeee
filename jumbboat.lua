@@ -292,176 +292,20 @@ RunService.RenderStepped:Connect(function()
 end)
 
 ---------------------------------------------------
--- MAIN TAB
-local mainTab = createTab("Main")
+-- 🏃 MOVEMENT TAB
+local moveTab = createTab("Movement")
 
--- NOCLIP
-local noclip = false
-makeToggle(mainTab,20,"No Clip",function(on) noclip=on end)
-game:GetService("RunService").Stepped:Connect(function()
-    if noclip and player.Character then
-        for _,v in pairs(player.Character:GetDescendants()) do
-            if v:IsA("BasePart") then v.CanCollide = false end
-        end
-    end
-end)
+-- Player
+local player = game.Players.LocalPlayer
 
--- GOD MODE
-local godMode = false
-makeToggle(mainTab,70,"God Mode",function(on) godMode=on end)
-game:GetService("RunService").Stepped:Connect(function()
-    if godMode and player.Character then
-        local hum = player.Character:FindFirstChildOfClass("Humanoid")
-        if hum then hum.Health = hum.MaxHealth end
-    end
-end)
-
--- FLY
-local flying = false
-local flySpeed = 60
-local bodyVel, bodyGyro
-makeToggle(mainTab,120,"Fly",function(on)
-    flying = on
-    local char = player.Character
-    if not char then return end
-    local root = char:WaitForChild("HumanoidRootPart")
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    if on then
-        hum.PlatformStand = true
-        bodyVel = Instance.new("BodyVelocity", root)
-        bodyVel.MaxForce = Vector3.new(1e5,1e5,1e5)
-        bodyVel.Velocity = Vector3.new()
-        bodyGyro = Instance.new("BodyGyro", root)
-        bodyGyro.MaxTorque = Vector3.new(1e5,1e5,1e5)
-        bodyGyro.P = 1e4
-    else
-        if bodyVel then bodyVel:Destroy() end
-        if bodyGyro then bodyGyro:Destroy() end
-        hum.PlatformStand = false
-    end
-end)
-game:GetService("RunService").RenderStepped:Connect(function()
-    if flying and player.Character and bodyVel and bodyGyro then
-        local root = player.Character.HumanoidRootPart
-        local camCF = workspace.CurrentCamera.CFrame
-        bodyGyro.CFrame = camCF
-        local dir = camCF.LookVector
-        bodyVel.Velocity = dir * flySpeed
-    end
-end)
-
----------------------------------------------------
--- TELEPORT TAB
-local teleportTab = createTab("Teleport")
-
-local scroll = Instance.new("ScrollingFrame", teleportTab)
-scroll.Size = UDim2.new(0,220,0,200)
-scroll.Position = UDim2.new(0,20,0,20)
-scroll.CanvasSize = UDim2.new(0,0,0,0)
-scroll.ScrollBarThickness = 6
-scroll.BackgroundColor3 = Color3.fromRGB(30,30,30)
-scroll.BorderSizePixel = 0
-
-local function createPlayerBtn(plr)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -10, 0, 30)
-    btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-    btn.TextColor3 = Color3.fromRGB(255,255,255)
-    btn.Font = Enum.Font.Gotham
-    btn.TextSize = 14
-    btn.Text = "🍎 " .. plr.Name
-    btn.Parent = scroll
-    btn.BorderSizePixel = 0
-
-    btn.MouseButton1Click:Connect(function()
-        if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-            local myChar = player.Character
-            if myChar and myChar:FindFirstChild("HumanoidRootPart") then
-                myChar.HumanoidRootPart.CFrame = plr.Character.HumanoidRootPart.CFrame + Vector3.new(2,1,2)
-            end
-        end
-    end)
-
-    return btn
-end
-
-local function refreshPlayers()
-    scroll:ClearAllChildren()
-    local y = 0
-    for _,plr in pairs(game.Players:GetPlayers()) do
-        if plr ~= player then
-            local btn = createPlayerBtn(plr)
-            btn.Position = UDim2.new(0,5,0,y)
-            y = y + 35
-        end
-    end
-    scroll.CanvasSize = UDim2.new(0,0,0,y)
-end
-
-refreshPlayers()
-game.Players.PlayerAdded:Connect(refreshPlayers)
-game.Players.PlayerRemoving:Connect(refreshPlayers)
-
--- Movement + Aimbot UI (LocalScript)
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
-
-local player = Players.LocalPlayer
-local camera = workspace.CurrentCamera
-
--- Helper: Ambil Humanoid
-local function getHumanoid(p)
-    p = p or player
-    if p and p.Character then
-        return p.Character:FindFirstChildOfClass("Humanoid")
-    end
-    return nil
-end
-
--- MAIN CONTAINER (asumsi ScreenGui sudah ada; bila belum, buat)
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "MovementAimbotGUI"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = player:WaitForChild("PlayerGui")
-
-local mainFrame = Instance.new("Frame", screenGui)
-mainFrame.AnchorPoint = Vector2.new(0,0)
-mainFrame.Position = UDim2.new(0.02,0,0.1,0)
-mainFrame.Size = UDim2.new(0,280,0,420)
-mainFrame.BackgroundTransparency = 1
-
--- Tab style container
-local container = Instance.new("Frame", mainFrame)
-container.Size = UDim2.new(1,0,1,0)
-container.BackgroundTransparency = 0.15
-container.BackgroundColor3 = Color3.fromRGB(18,18,18)
-container.BorderSizePixel = 0
-Instance.new("UICorner", container).CornerRadius = UDim.new(0,8)
-container.ClipsDescendants = false
-
-local title = Instance.new("TextLabel", container)
-title.Size = UDim2.new(1,0,0,28)
-title.Position = UDim2.new(0,0,0,0)
-title.BackgroundTransparency = 1
-title.Text = "🏃 Movement & 🎯 Aimbot"
-title.Font = Enum.Font.GothamBold
-title.TextSize = 16
-title.TextColor3 = Color3.fromRGB(255,255,255)
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Padding = Instance.new("UIPadding", title)
-title.Padding.PaddingLeft = UDim.new(0,8)
-
--- Scrolling frame untuk layout
-local moveFrame = Instance.new("ScrollingFrame", container)
-moveFrame.Size = UDim2.new(1, -20, 1, -38)
-moveFrame.Position = UDim2.new(0,10,0,34)
+-- ScrollingFrame biar rapi
+local moveFrame = Instance.new("ScrollingFrame", moveTab)
+moveFrame.Size = UDim2.new(1, -20, 1, -20)
+moveFrame.Position = UDim2.new(0,10,0,10)
 moveFrame.BackgroundTransparency = 1
 moveFrame.ScrollBarThickness = 6
 moveFrame.CanvasSize = UDim2.new(0,0,0,0)
 moveFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-moveFrame.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
 
 local layout = Instance.new("UIListLayout", moveFrame)
 layout.FillDirection = Enum.FillDirection.Vertical
@@ -469,133 +313,88 @@ layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 layout.SortOrder = Enum.SortOrder.LayoutOrder
 layout.Padding = UDim.new(0,8)
 
--- Utility: create holder
-local function createHolder()
-    local holder = Instance.new("Frame", moveFrame)
-    holder.Size = UDim2.new(0, 260, 0, 44)
-    holder.BackgroundColor3 = Color3.fromRGB(40,40,40)
-    holder.BorderSizePixel = 0
-    holder.ClipsDescendants = false
-    holder.ZIndex = 2
-    Instance.new("UICorner", holder).CornerRadius = UDim.new(0,6)
-    return holder
+-- Fungsi bikin TextBox
+local function makeBox(placeholder, default, callback)
+    local box = Instance.new("TextBox", moveFrame)
+    box.Size = UDim2.new(0,250,0,40)
+    box.PlaceholderText = placeholder
+    box.TextColor3 = Color3.fromRGB(255,255,255)
+    box.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    box.ClearTextOnFocus = false
+    box.BorderSizePixel = 0
+    box.Font = Enum.Font.Gotham
+    box.TextSize = 14
+    Instance.new("UICorner", box).CornerRadius = UDim.new(0,6)
+    box.FocusLost:Connect(function()
+        local val = tonumber(box.Text)
+        callback(val or default)
+    end)
+    return box
 end
 
--- makeAdjuster (plus/minus)
-local function makeAdjuster(title, default, step, applyFunc)
-    local holder = createHolder()
-    local label = Instance.new("TextLabel", holder)
-    label.Size = UDim2.new(0.55, -10, 1, 0)
-    label.Position = UDim2.new(0.05,0,0,0)
-    label.BackgroundTransparency = 1
-    label.Font = Enum.Font.Gotham
-    label.TextSize = 14
-    label.TextColor3 = Color3.fromRGB(255,255,255)
-    label.TextXAlignment = Enum.TextXAlignment.Left
-
-    local minus = Instance.new("TextButton", holder)
-    minus.Size = UDim2.new(0,44,0,30)
-    minus.Position = UDim2.new(0.6,0,0.1,0)
-    minus.Text = "—"
-    minus.AutoButtonColor = true
-    minus.Font = Enum.Font.GothamBold
-    minus.TextSize = 18
-    minus.TextColor3 = Color3.fromRGB(255,255,255)
-    minus.BackgroundColor3 = Color3.fromRGB(60,60,60)
-    minus.BorderSizePixel = 0
-    minus.ZIndex = 3
-    Instance.new("UICorner", minus).CornerRadius = UDim.new(0,6)
-
-    local plus = Instance.new("TextButton", holder)
-    plus.Size = UDim2.new(0,44,0,30)
-    plus.Position = UDim2.new(0.8,0,0.1,0)
-    plus.Text = "+"
-    plus.AutoButtonColor = true
-    plus.Font = Enum.Font.GothamBold
-    plus.TextSize = 18
-    plus.TextColor3 = Color3.fromRGB(255,255,255)
-    plus.BackgroundColor3 = Color3.fromRGB(60,60,60)
-    plus.BorderSizePixel = 0
-    plus.ZIndex = 3
-    Instance.new("UICorner", plus).CornerRadius = UDim.new(0,6)
-
-    -- ensure click not blocked
-    holder.Active = false
-    minus.Active = true
-    plus.Active = true
-
-    local value = default
-    local function updateLabel()
-        label.Text = title..": "..tostring(value)
-        pcall(function() applyFunc(value) end)
-    end
-
-    minus.MouseButton1Click:Connect(function()
-        value = value - step
-        updateLabel()
-    end)
-    plus.MouseButton1Click:Connect(function()
-        value = value + step
-        updateLabel()
-    end)
-
-    updateLabel()
-    return holder
-end
-
--- makeToggle
-local function makeToggle(text, default, callback)
+-- Fungsi bikin Toggle
+local function makeToggle(text, callback)
     local btn = Instance.new("TextButton", moveFrame)
-    btn.Size = UDim2.new(0,260,0,44)
-    btn.BackgroundColor3 = Color3.fromRGB(50,50,50)
-    btn.BorderSizePixel = 0
+    btn.Size = UDim2.new(0,250,0,40)
+    btn.Text = "❌ "..text
+    btn.TextColor3 = Color3.fromRGB(255,255,255)
     btn.Font = Enum.Font.GothamBold
     btn.TextSize = 14
-    btn.TextColor3 = Color3.fromRGB(255,255,255)
+    btn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    btn.BorderSizePixel = 0
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
-    btn.AutoButtonColor = true
-    btn.ZIndex = 3
-    btn.Active = true
 
-    local state = default or false
-    btn.Text = (state and "✅ " or "❌ ")..text
-
+    local state = false
     btn.MouseButton1Click:Connect(function()
         state = not state
         btn.Text = (state and "✅ " or "❌ ")..text
-        pcall(function() callback(state) end)
+        callback(state)
     end)
-    -- ensure initial callback
-    pcall(function() callback(state) end)
     return btn
 end
 
--- ========== Movement Controls ==========
-local lastWalkSpeed = 16
-makeAdjuster("🍎 Speed", 16, 1, function(val)
-    lastWalkSpeed = val
+-- Ambil Humanoid
+local function getHumanoid()
+    return player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+end
+
+---------------------------------------------------
+-- ✨ FITUR FITUR
+---------------------------------------------------
+
+-- SPEED
+makeBox("🍎 Speed (default 16)", 16, function(val)
     local hum = getHumanoid()
-    if hum then
-        hum.WalkSpeed = tonumber(val) or 16
-    end
+    if hum then hum.WalkSpeed = val end
 end)
 
-local lastJumpPower = 50
-makeAdjuster("🍎 Jump Power", 50, 5, function(val)
-    lastJumpPower = val
+-- JUMP POWER
+makeBox("🍎 Jump Power (default 50)", 50, function(val)
     local hum = getHumanoid()
-    if hum then
+    if hum then 
         hum.UseJumpPower = true
-        hum.JumpPower = tonumber(val) or 50
+        hum.JumpPower = val
     end
 end)
 
--- Infinite jump toggle
+-- HIP HEIGHT
+makeBox("🍎 HipHeight (default 2)", 2, function(val)
+    local hum = getHumanoid()
+    if hum then hum.HipHeight = val end
+end)
+
+-- GRAVITY
+makeBox("🌍 Gravity (default 196.2)", 196.2, function(val)
+    workspace.Gravity = val
+end)
+
+-- INFINITE JUMP
 local infjump = false
-makeToggle("Infinite Jump", false, function(on)
+makeToggle("Infinite Jump", function(on)
     infjump = on
 end)
-UserInputService.JumpRequest:Connect(function()
+
+game:GetService("UserInputService").JumpRequest:Connect(function()
     if infjump then
         local hum = getHumanoid()
         if hum then
@@ -604,201 +403,259 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- ========== Aimbot System ==========
+-- FLY
+local flying = false
+local flySpeed = 50
+local bodyVel, bodyGyro
+makeBox("🍎 Fly Speed (default 50)", 50, function(val)
+    flySpeed = val or 50
+end)
+
+makeToggle("Fly", function(on)
+    flying = on
+    local char = player.Character
+    if not char then return end
+    if on then
+        local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart")
+        if not hrp then return end
+        bodyVel = Instance.new("BodyVelocity")
+        bodyVel.MaxForce = Vector3.new(1e5,1e5,1e5)
+        bodyVel.Velocity = Vector3.zero
+        bodyVel.Parent = hrp
+
+        bodyGyro = Instance.new("BodyGyro")
+        bodyGyro.MaxTorque = Vector3.new(1e5,1e5,1e5)
+        bodyGyro.CFrame = hrp.CFrame
+        bodyGyro.Parent = hrp
+    else
+        if bodyVel then bodyVel:Destroy(); bodyVel = nil end
+        if bodyGyro then bodyGyro:Destroy(); bodyGyro = nil end
+    end
+end)
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    if flying and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = player.Character.HumanoidRootPart
+        local cam = workspace.CurrentCamera
+        local dir = Vector3.new(0,0,0)
+        local uis = game:GetService("UserInputService")
+        if uis:IsKeyDown(Enum.KeyCode.W) then dir = dir + cam.CFrame.LookVector end
+        if uis:IsKeyDown(Enum.KeyCode.S) then dir = dir - cam.CFrame.LookVector end
+        if uis:IsKeyDown(Enum.KeyCode.A) then dir = dir - cam.CFrame.RightVector end
+        if uis:IsKeyDown(Enum.KeyCode.D) then dir = dir + cam.CFrame.RightVector end
+        if uis:IsKeyDown(Enum.KeyCode.Space) then dir = dir + Vector3.new(0,1,0) end
+        if uis:IsKeyDown(Enum.KeyCode.LeftControl) then dir = dir - Vector3.new(0,1,0) end
+
+        if dir.Magnitude > 0 then
+            if bodyVel then bodyVel.Velocity = dir.Unit * flySpeed end
+        else
+            if bodyVel then bodyVel.Velocity = Vector3.new(0,0,0) end
+        end
+        if bodyGyro then bodyGyro.CFrame = cam.CFrame end
+    end
+end)
+
+-- NOCLIP
+local noclip = false
+makeToggle("Noclip", function(on)
+    noclip = on
+end)
+
+game:GetService("RunService").Stepped:Connect(function()
+    if noclip and player.Character then
+        for _, part in pairs(player.Character:GetDescendants()) do
+            if part:IsA("BasePart") and part.CanCollide then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
+
+---------------------------------------------------
+-- 🟢 AIMBOT (ditambahkan ke dalam moveFrame)
+---------------------------------------------------
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+local camera = workspace.CurrentCamera
+local localPlayer = Players.LocalPlayer
+
 local aimbotEnabled = false
 local aimbotMode = "nearest" -- "nearest" or "manual"
-local selectedTarget = nil -- Player object
-local aimSmoothing = 0.25 -- 0..1 (bigger => slower smoothing)
-local aimFOV = 120 -- optional, not used for strict selection but can be extended
+local selectedTarget = nil
+local aimSmoothing = 0.25
+local aiming = false
 
--- UI for aimbot controls
-local aimbotTitle = Instance.new("TextLabel", moveFrame)
-aimbotTitle.Size = UDim2.new(0,260,0,24)
-aimbotTitle.BackgroundTransparency = 1
-aimbotTitle.Text = "— Aimbot —"
-aimbotTitle.Font = Enum.Font.GothamBold
-aimbotTitle.TextColor3 = Color3.fromRGB(200,200,200)
-aimbotTitle.TextSize = 13
+-- Aimbot header
+local aTitle = Instance.new("TextLabel", moveFrame)
+aTitle.Size = UDim2.new(0,250,0,20)
+aTitle.BackgroundTransparency = 1
+aTitle.Text = "— Aimbot —"
+aTitle.Font = Enum.Font.GothamBold
+aTitle.TextSize = 13
+aTitle.TextColor3 = Color3.fromRGB(220,220,220)
 
--- Toggle aimbot
-makeToggle("Enable Aimbot", false, function(on)
+-- Enable toggle (uses existing style)
+makeToggle("Aimbot", function(on)
     aimbotEnabled = on
     if not on then
-        -- clear selection but keep mode
-        -- restore camera if changed by code
+        aiming = false
         if camera and camera.CameraType == Enum.CameraType.Scriptable then
             camera.CameraType = Enum.CameraType.Custom
         end
     end
 end)
 
--- Mode selector (two small buttons)
-local modeHolder = createHolder()
-modeHolder.Size = UDim2.new(0,260,0,44)
-local modeLabel = Instance.new("TextLabel", modeHolder)
-modeLabel.Size = UDim2.new(0.55, -10, 1, 0)
-modeLabel.Position = UDim2.new(0.05,0,0,0)
-modeLabel.BackgroundTransparency = 1
-modeLabel.Font = Enum.Font.Gotham
-modeLabel.TextSize = 14
-modeLabel.TextColor3 = Color3.fromRGB(255,255,255)
-modeLabel.TextXAlignment = Enum.TextXAlignment.Left
-modeLabel.Text = "Mode: Nearest"
+-- Aim smoothing box (re-uses makeBox)
+makeBox("🎯 Aim Smoothing (0-1)", aimSmoothing, function(val)
+    aimSmoothing = math.clamp(tonumber(val) or 0.25, 0, 1)
+end)
 
-local btnNearest = Instance.new("TextButton", modeHolder)
-btnNearest.Size = UDim2.new(0,88,0,30)
-btnNearest.Position = UDim2.new(0.55,4,0.1,0)
-btnNearest.Text = "Nearest"
-btnNearest.Font = Enum.Font.GothamBold
-btnNearest.TextSize = 13
-btnNearest.TextColor3 = Color3.fromRGB(255,255,255)
-Instance.new("UICorner", btnNearest).CornerRadius = UDim.new(0,6)
-btnNearest.AutoButtonColor = true
+-- Mode buttons (Nearest / Select)
+local modeHolder = Instance.new("Frame", moveFrame)
+modeHolder.Size = UDim2.new(0,250,0,36)
+modeHolder.BackgroundTransparency = 1
 
-local btnManual = Instance.new("TextButton", modeHolder)
-btnManual.Size = UDim2.new(0,88,0,30)
-btnManual.Position = UDim2.new(0.78,-10,0.1,0)
-btnManual.Text = "Select"
-btnManual.Font = Enum.Font.GothamBold
-btnManual.TextSize = 13
-btnManual.TextColor3 = Color3.fromRGB(255,255,255)
-Instance.new("UICorner", btnManual).CornerRadius = UDim.new(0,6)
-btnManual.AutoButtonColor = true
+local modeNearest = Instance.new("TextButton", modeHolder)
+modeNearest.Size = UDim2.new(0.48, -4, 1, 0)
+modeNearest.Position = UDim2.new(0,0,0,0)
+modeNearest.Text = "Nearest"
+modeNearest.Font = Enum.Font.Gotham
+modeNearest.TextSize = 13
+modeNearest.BackgroundColor3 = Color3.fromRGB(65,65,65)
+modeNearest.BorderSizePixel = 0
+Instance.new("UICorner", modeNearest).CornerRadius = UDim.new(0,6)
 
-btnNearest.MouseButton1Click:Connect(function()
+local modeSelect = Instance.new("TextButton", modeHolder)
+modeSelect.Size = UDim2.new(0.48, -4, 1, 0)
+modeSelect.Position = UDim2.new(0.52, 0, 0, 0)
+modeSelect.Text = "Select"
+modeSelect.Font = Enum.Font.Gotham
+modeSelect.TextSize = 13
+modeSelect.BackgroundColor3 = Color3.fromRGB(65,65,65)
+modeSelect.BorderSizePixel = 0
+Instance.new("UICorner", modeSelect).CornerRadius = UDim.new(0,6)
+
+modeNearest.MouseButton1Click:Connect(function()
     aimbotMode = "nearest"
-    modeLabel.Text = "Mode: Nearest"
     selectedTarget = nil
 end)
 
--- Popup select UI
-local selectPopup = Instance.new("Frame", screenGui)
-selectPopup.Size = UDim2.new(0,300,0,260)
-selectPopup.Position = UDim2.new(0.5,-150,0.5,-130)
-selectPopup.Visible = false
-selectPopup.BackgroundColor3 = Color3.fromRGB(20,20,20)
-selectPopup.BorderSizePixel = 0
-Instance.new("UICorner", selectPopup).CornerRadius = UDim.new(0,8)
-selectPopup.ZIndex = 50
+-- Select list placed inside moveFrame (tidak buat ScreenGui baru)
+local selectFrame = Instance.new("Frame", moveFrame)
+selectFrame.Size = UDim2.new(0,250,0,200)
+selectFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+selectFrame.Visible = false
+selectFrame.BorderSizePixel = 0
+Instance.new("UICorner", selectFrame).CornerRadius = UDim.new(0,6)
 
-local spTitle = Instance.new("TextLabel", selectPopup)
-spTitle.Size = UDim2.new(1,0,0,30)
-spTitle.Position = UDim2.new(0,0,0,0)
-spTitle.BackgroundTransparency = 1
-spTitle.Text = "Select Player (click to choose)"
-spTitle.Font = Enum.Font.GothamBold
-spTitle.TextSize = 14
-spTitle.TextColor3 = Color3.fromRGB(255,255,255)
+local sfTitle = Instance.new("TextLabel", selectFrame)
+sfTitle.Size = UDim2.new(1,0,0,24)
+sfTitle.BackgroundTransparency = 1
+sfTitle.Text = "Select Target"
+sfTitle.Font = Enum.Font.GothamBold
+sfTitle.TextSize = 13
+sfTitle.TextColor3 = Color3.fromRGB(220,220,220)
 
-local spList = Instance.new("ScrollingFrame", selectPopup)
-spList.Size = UDim2.new(1,-10,1,-70)
-spList.Position = UDim2.new(0,5,0,35)
-spList.BackgroundTransparency = 1
-spList.ScrollBarThickness = 6
-spList.CanvasSize = UDim2.new(0,0,0,0)
-spList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+local playerList = Instance.new("ScrollingFrame", selectFrame)
+playerList.Size = UDim2.new(1, -10, 1, -34)
+playerList.Position = UDim2.new(0,5,0,30)
+playerList.BackgroundTransparency = 1
+playerList.ScrollBarThickness = 6
+playerList.CanvasSize = UDim2.new(0,0,0,0)
+playerList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+local plLayout = Instance.new("UIListLayout", playerList)
+plLayout.Padding = UDim.new(0,6)
 
-local spLayout = Instance.new("UIListLayout", spList)
-spLayout.SortOrder = Enum.SortOrder.LayoutOrder
-spLayout.Padding = UDim.new(0,6)
+local closeSelect = Instance.new("TextButton", selectFrame)
+closeSelect.Size = UDim2.new(0.6,0,0,28)
+closeSelect.Position = UDim2.new(0.2,0,1,-32)
+closeSelect.Text = "Cancel"
+closeSelect.Font = Enum.Font.GothamBold
+closeSelect.TextSize = 13
+Instance.new("UICorner", closeSelect).CornerRadius = UDim.new(0,6)
+closeSelect.MouseButton1Click:Connect(function()
+    selectFrame.Visible = false
+end)
 
-local cancelSelectBtn = Instance.new("TextButton", selectPopup)
-cancelSelectBtn.Size = UDim2.new(0,120,0,30)
-cancelSelectBtn.Position = UDim2.new(0.5,-60,1,-34)
-cancelSelectBtn.Text = "Cancel"
-cancelSelectBtn.Font = Enum.Font.GothamBold
-cancelSelectBtn.TextSize = 14
-cancelSelectBtn.AutoButtonColor = true
-Instance.new("UICorner", cancelSelectBtn).CornerRadius = UDim.new(0,6)
-
-local function refreshPlayerList()
-    -- clear
-    for _,child in pairs(spList:GetChildren()) do
-        if child:IsA("TextButton") then child:Destroy() end
+-- Cancel target button
+makeToggle("Cancel Target", function(on)
+    if on then
+        selectedTarget = nil
+        aimbotMode = "nearest"
+        selectFrame.Visible = false
+        -- turn toggle back off immediately (so button behaves like a press)
+        -- find the last Toggle button and reset its text (cheap hack)
+        -- better: could return the toggle object from makeToggle, but keeping simple
+        -- We will just wait a frame and reset toggles' visuals:
+        task.defer(function()
+            for _,v in pairs(moveFrame:GetChildren()) do
+                if v:IsA("TextButton") and v.Text:match("Cancel Target") then
+                    v.Text = "❌ Cancel Target"
+                end
+            end
+        end)
     end
-    for i,p in ipairs(Players:GetPlayers()) do
-        if p ~= player then
-            local btn = Instance.new("TextButton", spList)
-            btn.Size = UDim2.new(1,-10,0,34)
-            btn.Position = UDim2.new(0,5,0,0)
-            btn.Text = p.Name
-            btn.Font = Enum.Font.Gotham
-            btn.TextSize = 14
-            btn.AutoButtonColor = true
-            btn.BackgroundColor3 = Color3.fromRGB(45,45,45)
-            btn.BorderSizePixel = 0
-            btn.ZIndex = 51
-            Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
-            btn.MouseButton1Click:Connect(function()
-                selectedTarget = p
+end)
+
+-- Populate player list
+local function refreshPlayerList()
+    for _,c in pairs(playerList:GetChildren()) do
+        if c:IsA("TextButton") then c:Destroy() end
+    end
+    for _,pl in ipairs(Players:GetPlayers()) do
+        if pl ~= localPlayer then
+            local ok = Instance.new("TextButton", playerList)
+            ok.Size = UDim2.new(1, -10, 0, 30)
+            ok.Position = UDim2.new(0,5,0,0)
+            ok.Text = pl.Name
+            ok.Font = Enum.Font.Gotham
+            ok.TextSize = 13
+            ok.BackgroundColor3 = Color3.fromRGB(45,45,45)
+            ok.BorderSizePixel = 0
+            Instance.new("UICorner", ok).CornerRadius = UDim.new(0,6)
+            ok.MouseButton1Click:Connect(function()
+                selectedTarget = pl
                 aimbotMode = "manual"
-                modeLabel.Text = "Mode: Manual ("..p.Name..")"
-                selectPopup.Visible = false
+                selectFrame.Visible = false
             end)
         end
     end
 end
 
-btnManual.MouseButton1Click:Connect(function()
+modeSelect.MouseButton1Click:Connect(function()
     refreshPlayerList()
-    selectPopup.Visible = true
+    selectFrame.Visible = true
 end)
 
-cancelSelectBtn.MouseButton1Click:Connect(function()
-    selectPopup.Visible = false
-end)
-
--- Cancel target button (clear selection)
-local cancelHolder = createHolder()
-cancelHolder.Size = UDim2.new(0,260,0,36)
-local cancelBtn = Instance.new("TextButton", cancelHolder)
-cancelBtn.Size = UDim2.new(1, -12, 1, 0)
-cancelBtn.Position = UDim2.new(0,6,0,0)
-cancelBtn.Text = "Cancel Target"
-cancelBtn.Font = Enum.Font.GothamBold
-cancelBtn.TextSize = 14
-cancelBtn.AutoButtonColor = true
-Instance.new("UICorner", cancelBtn).CornerRadius = UDim.new(0,6)
-cancelBtn.MouseButton1Click:Connect(function()
-    selectedTarget = nil
-    if aimbotMode == "manual" then
-        modeLabel.Text = "Mode: Manual (none)"
-    end
-end)
-
--- Aim smoothing adjuster
-makeAdjuster("Aim Smoothing (0-1)", 0.25, 0.05, function(val)
-    aimSmoothing = math.clamp(tonumber(val) or 0.25, 0, 1)
-end)
-
--- ================= Aim logic =================
-local prevCameraType = camera.CameraType
+-- helper: find closest player
 local function getClosestPlayer()
     local closest = nil
     local closestDist = math.huge
-    local myChar = player.Character
+    local myChar = localPlayer.Character
     local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
     if not myRoot then return nil end
-
     for _, pl in pairs(Players:GetPlayers()) do
-        if pl ~= player and pl.Character and pl.Character:FindFirstChild("HumanoidRootPart") and getHumanoid(pl) and getHumanoid(pl).Health > 0 then
-            local targetRoot = pl.Character:FindFirstChild("HumanoidRootPart")
-            local dist = (targetRoot.Position - myRoot.Position).Magnitude
-            if dist < closestDist then
-                closestDist = dist
-                closest = pl
+        if pl ~= localPlayer and pl.Character and pl.Character:FindFirstChild("HumanoidRootPart") then
+            local hum = pl.Character:FindFirstChildOfClass("Humanoid")
+            if hum and hum.Health > 0 then
+                local targetRoot = pl.Character:FindFirstChild("HumanoidRootPart")
+                local dist = (targetRoot.Position - myRoot.Position).Magnitude
+                if dist < closestDist then
+                    closestDist = dist
+                    closest = pl
+                end
             end
         end
     end
     return closest
 end
 
-local aiming = false
-RunService:BindToRenderStep("AimbotAimStep", Enum.RenderPriority.Camera.Value + 1, function(dt)
+-- Main aim loop (uses BindToRenderStep for smoothness)
+RunService:BindToRenderStep("AimbotRender", Enum.RenderPriority.Camera.Value + 1, function(dt)
     if not aimbotEnabled then
         if aiming then
             aiming = false
-            -- restore camera
             if camera and camera.CameraType == Enum.CameraType.Scriptable then
                 camera.CameraType = Enum.CameraType.Custom
             end
@@ -806,42 +663,31 @@ RunService:BindToRenderStep("AimbotAimStep", Enum.RenderPriority.Camera.Value + 
         return
     end
 
-    -- determine target
     local target = nil
     if aimbotMode == "nearest" then
         target = getClosestPlayer()
-    elseif aimbotMode == "manual" then
+    else
         target = selectedTarget
-        if target and (not target.Character or not target.Character:FindFirstChild("HumanoidRootPart") or (getHumanoid(target) and getHumanoid(target).Health <= 0)) then
-            -- dead or invalid
+        if target and (not target.Character or not target.Character:FindFirstChild("HumanoidRootPart") or (target.Character:FindFirstChildOfClass("Humanoid") and target.Character:FindFirstChildOfClass("Humanoid").Health <= 0)) then
             target = nil
             selectedTarget = nil
-            if aimbotMode == "manual" then
-                modeLabel.Text = "Mode: Manual (none)"
-            end
+            aimbotMode = "nearest"
         end
     end
 
-    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-        aiming = true
-        -- set camera to scriptable to control smoothly
-        if camera.CameraType ~= Enum.CameraType.Scriptable then
-            camera.CameraType = Enum.CameraType.Scriptable
-        end
-
-        local myPos = camera.CFrame.Position
+    if target and target.Character then
         local targetPart = target.Character:FindFirstChild("Head") or target.Character:FindFirstChild("HumanoidRootPart")
-        if not targetPart then return end
-        local targetPos = targetPart.Position
-
-        -- compute lookAt CFrame while keeping camera position
-        local desired = CFrame.new(myPos, targetPos)
-
-        -- lerp current camera CFrame to desired
-        local newCFrame = camera.CFrame:Lerp(desired, math.clamp(1 - aimSmoothing, 0.01, 1))
-        camera.CFrame = newCFrame
+        if targetPart then
+            if camera.CameraType ~= Enum.CameraType.Scriptable then
+                camera.CameraType = Enum.CameraType.Scriptable
+            end
+            aiming = true
+            local myPos = camera.CFrame.Position
+            local desired = CFrame.new(myPos, targetPart.Position)
+            local lerpAlpha = math.clamp(1 - aimSmoothing, 0.01, 1)
+            camera.CFrame = camera.CFrame:Lerp(desired, lerpAlpha)
+        end
     else
-        -- no target
         if aiming then
             aiming = false
             if camera and camera.CameraType == Enum.CameraType.Scriptable then
@@ -851,54 +697,32 @@ RunService:BindToRenderStep("AimbotAimStep", Enum.RenderPriority.Camera.Value + 
     end
 end)
 
--- cleanup on character respawn: reapply movement defaults
-Players.LocalPlayer.CharacterAdded:Connect(function(char)
-    wait(0.5)
-    local hum = getHumanoid()
-    if hum then
-        hum.WalkSpeed = lastWalkSpeed or 16
-        hum.UseJumpPower = true
-        hum.JumpPower = lastJumpPower or 50
-    end
-end)
-
--- Optional: Hotkey to toggle aimbot (press 'B')
-UserInputService.InputBegan:Connect(function(input, processed)
+-- Hotkeys: B toggle aimbot, N cancel target
+UIS.InputBegan:Connect(function(input, processed)
     if processed then return end
     if input.UserInputType == Enum.UserInputType.Keyboard then
         if input.KeyCode == Enum.KeyCode.B then
             aimbotEnabled = not aimbotEnabled
-            -- update toggle button label (search for Enable Aimbot)
+            -- update visual text of Aimbot toggle (best-effort)
             for _,v in pairs(moveFrame:GetChildren()) do
                 if v:IsA("TextButton") and v.Text:match("Aimbot") then
-                    v.Text = (aimbotEnabled and "✅ " or "❌ ").."Enable Aimbot"
+                    v.Text = (aimbotEnabled and "✅ " or "❌ ").."Aimbot"
                 end
             end
-        end
-        if input.KeyCode == Enum.KeyCode.N then
-            -- quick cancel
+        elseif input.KeyCode == Enum.KeyCode.N then
             selectedTarget = nil
             aimbotMode = "nearest"
-            modeLabel.Text = "Mode: Nearest"
+            selectFrame.Visible = false
         end
     end
 end)
 
--- Small UX: close popup when clicking outside
-selectPopup.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        -- do nothing; user selects via buttons
-    end
-end)
-
--- Ensure initial player list updated when players join/leave
+-- Refresh player list when players join/leave
 Players.PlayerAdded:Connect(function() refreshPlayerList() end)
 Players.PlayerRemoving:Connect(function() refreshPlayerList() end)
 
--- Initially refresh
+-- Initial refresh
 refreshPlayerList()
-
--- End of script
 ---------------------------------------------------
 -- 🛠️ MISC TAB
 local miscTab = createTab("Misc")
